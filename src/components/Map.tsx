@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 // import { Map as MapLibreMap } from '@vis.gl/react-maplibre';
 import "maplibre-gl/dist/maplibre-gl.css";
 import maplibregl from 'maplibre-gl';
 import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { setMap } from "../redux/reducers/mapSlice";
-import { ShowSolid } from "../services/polygonService";
+import { ShowLogo, ShowSolid } from "../services/polygonService";
 import Solid from "../models/Solid";
 
 export default function Map(): React.JSX.Element{
@@ -13,6 +13,7 @@ export default function Map(): React.JSX.Element{
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
   const solid = useAppSelector((state) => state.storageReducer.solid);
+  const polygonList = useAppSelector((state) => state.storageReducer.polygons);
   const map = useAppSelector((state) => state.mapReducer.map);
  
 
@@ -39,7 +40,7 @@ export default function Map(): React.JSX.Element{
                 'id': 'background',
                 'type': 'background',
                 'paint': {
-                    'background-color': '#e0dfdf'
+                    'background-color': '#e6e6e6ff'
                 }
             },
             {
@@ -49,7 +50,7 @@ export default function Map(): React.JSX.Element{
             }
         ]
       },
-      center: [33.087147, 39.091641],
+      center: [32.561392, 37.944467],
       zoom: 19,
       pitch: 40,
       bearing: 20,
@@ -57,40 +58,28 @@ export default function Map(): React.JSX.Element{
 
     
     map.on('load', () => {
-      // map.addSource('floorplan', {
-      //   'type': 'geojson',
-      //   'data': './building.geojson'
-      // });
-
-      // // map.removeLayer("floorplan")
-      // map.addLayer({
-      //   'id': 'room-extrusion',
-      //   'type': 'fill-extrusion',
-      //   'source': 'floorplan',
-      //   'paint': {
-      //     'fill-extrusion-color': ['get', 'color'],
-      //     'fill-extrusion-height': ['get', 'height'],
-      //     'fill-extrusion-base': ['get', 'base_height'],
-      //     'fill-extrusion-opacity': 0.5
-      //   }
-      // });
-
       dispatch(setMap(map)); 
     });
 
     return () => map.remove();
   }, []);
 
-  useEffect(() =>{
-    if(currentFloor != null && map != null && solid != null && solid.features.length > 0){
-      const featuresToShow = solid.features.filter((f) => f.properties.floor == currentFloor.index)
-      const solidToShow: Solid = {
-        type:"FeatureCollection",
-        features: featuresToShow,
-      };
-      ShowSolid(solidToShow, map!);
-    }
-  }, [currentFloor, map, solid])
+  // useEffect(() =>{
+  //   if(currentFloor != null && map != null && solid != null && solid.features.length > 0){
+  //     const featuresToShow = solid.features.filter((f) => f.properties.floor == currentFloor.index)
+  //     const solidToShow: Solid = {
+  //       type:"FeatureCollection",
+  //       features: featuresToShow,
+  //     };
+  //     ShowSolid(solidToShow, map!);
+
+  //     // logo test
+  //     if(polygonList != null && polygonList.length >0 ){
+     
+  //         ShowLogo(polygonList[0], map); 
+  //     }
+  //   }
+  // }, [currentFloor, map, solid])
 
   return (
     <div id="map" style={{ width: '100%', height: '90vh' }}></div>

@@ -26,7 +26,7 @@ export function ShowPath(path: LineStringGeoJson, map: maplibregl.Map): void {
       "line-join": "round",
     },
     paint: {
-      "line-color": "#3457D5", 
+      "line-color": "#cececeff", 
       "line-width": 14, 
       "line-opacity": 0.8  
     }

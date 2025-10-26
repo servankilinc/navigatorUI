@@ -18,6 +18,7 @@ import { setCurrentFloor } from "./redux/reducers/appSlice";
 import { DesignGraph } from "./services/graphService";
 import Solid from "./models/Solid";
 import Floors from "./components/Floors";
+import GraphBaseModel from "./models/GraphBaseModel";
 
 function App() {
   const dispatch = useAppDispatch();
@@ -42,7 +43,7 @@ function App() {
       const data_advancedPoint: AdvancedPointGeoJson[] = await res_advancedPoint.json();
       const data_entrancePoint: EntrancePointGeoJson[] = await res_entrancePoint.json();
       const data_floor: Floor[] = await res_floor.json();
-      const data_graph: Graph[] = await res_graph.json();
+      const data_graph: GraphBaseModel[] = await res_graph.json();
       const data_path: LineStringGeoJson[] = await res_path.json();
       const data_polygon: PolygonGeoJson[] = await res_polygon.json();
       const data_solid: Solid[] = await res_solid.json();
@@ -50,7 +51,23 @@ function App() {
       dispatch(setAdvancedPointList(data_advancedPoint));
       dispatch(setEntrancePointList(data_entrancePoint));
       dispatch(setFloorList(data_floor));
-      dispatch(setGraphList(data_graph));
+      // if(data_graph && data_graph.length > 0) dispatch(setGraphList(data_graph.map(d => d.mapToGraph())));
+      if (data_graph && data_graph.length > 0) {
+        const _graphList: Graph[] = [];
+        data_graph.forEach(pd => {
+          let _graph = new Graph(pd.floor);
+          _graph.nodes = pd.nodes;
+          _graph.edges = pd.edges;
+      
+          pd.edges.forEach((edge) => {
+            _graph.graphGraphLib.setNode(edge.source);
+            _graph.graphGraphLib.setNode(edge.target);
+            _graph.graphGraphLib.setEdge(edge.source, edge.target, edge.weight);
+          });
+          _graphList.push(_graph);
+        })
+        dispatch(setGraphList(_graphList));
+      }
       dispatch(setPathList(data_path));
       dispatch(setPolygonList(data_polygon));
       dispatch(setSolidFeatures(data_solid[0].features));

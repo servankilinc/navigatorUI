@@ -29,6 +29,10 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void  {
     id: sourceId,
     type: 'line',
     source: sourceId,
+        layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
     paint: {
       'line-color': 'orange',
       'line-width': 24,
@@ -72,7 +76,6 @@ export function GenerateRoutes(startPolyId: string, targetPolyId: string) {
       path: route
     });
   }
-
   // 2) Başlangıç konumu üstte veya aşağıda ise
   else {
     const direction = startPoly.properties.floor > targetPoly.properties.floor;

@@ -6,12 +6,14 @@ import { showAlertError, showAlertSuccess } from '../redux/reducers/alertSlice';
 import Route from '../models/Route';
 import { setRoutes } from '../redux/reducers/storageSlice';
 import { ClearRoutes, GenerateRoutes, ShowRoute } from '../services/navigationService';
+import { ShowEntrancePoint } from '../services/entrancePointService';
 
 export default function NavigationController(): React.JSX.Element {
   const dispatch = useAppDispatch();
   const map = useAppSelector((state) => state.mapReducer.map);
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
+  const entrancePointList = useAppSelector((state) => state.storageReducer.entrancePoints);
   const polygonList = useAppSelector((state) => state.storageReducer.polygons);
 
   const [startPolyId, setStartPolyId] = useState<string>();
@@ -19,9 +21,17 @@ export default function NavigationController(): React.JSX.Element {
 
   function HandleNavigation(): void {
     try {
+      if (!map) return;
+
       if (startPolyId == null || targetPolyId == null) throw new Error('Please selecet start and target positions');
       
       const tempRouteList: Route[] = GenerateRoutes(startPolyId, targetPolyId);
+
+      const startPoint = entrancePointList.find(f => f.properties.polygonId == startPolyId);
+      const targetPoint = entrancePointList.find(f => f.properties.polygonId == targetPolyId);
+
+      if(startPoint) ShowEntrancePoint(startPoint, map);
+      if(targetPoint) ShowEntrancePoint(targetPoint, map);
 
       // Show 
       const currentResult = tempRouteList.find(f => f.floor== currentFloor?.index);

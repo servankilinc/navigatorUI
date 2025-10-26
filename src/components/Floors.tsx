@@ -6,6 +6,8 @@ import { ShowAdvancedPoint } from '../services/advancedPointService';
 import { ShowPath } from '../services/pathService';
 // import CustomLayer from '../models/Features/CustomLayer';
 import { ShowRoute } from '../services/navigationService';
+import Solid from '../models/Solid';
+import { ShowLogo, ShowSolid } from '../services/polygonService';
 
 function Floors() {
   const map = useAppSelector((state) => state.mapReducer.map);
@@ -13,56 +15,74 @@ function Floors() {
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
 
   const floorList = useAppSelector((state) => state.storageReducer.floorList);
-  // const polygonList = useAppSelector((state) => state.storageReducer.polygons);
+  const polygonList = useAppSelector((state) => state.storageReducer.polygons);
   const pathList = useAppSelector((state) => state.storageReducer.paths);
   const entrancePointList = useAppSelector((state) => state.storageReducer.entrancePoints);
   const advancedPointList = useAppSelector((state) => state.storageReducer.advancedPoints);
   const routeList = useAppSelector((state) => state.storageReducer.routeList);
+  const solid = useAppSelector((state) => state.storageReducer.solid);
 
   const dispath = useAppDispatch();
 
   function SwipeFloor(floorIndex: number): void {
+    
     const nextFloor = floorList.find((f) => f.index == floorIndex)!;
-
+    
     dispath(setCurrentFloor(nextFloor));
     ClearLayers();
     
+    if (!map) return;
+    const symbolLayer = map.getStyle().layers;
+    console.log("LAYERS => ", symbolLayer)
+    polygonList
+      .filter((f) => f.properties.floor == floorIndex)
+      .map((polygon) => {
+        ShowLogo(polygon, map);
+      });
+
     // polygonList
-    //   .filter((f) => f.properties.floor == nextFloor.index)
+    //   .filter((f) => f.properties.floor == floorIndex)
     //   .map((polygon) => {
     //     ShowPolygon(polygon, map!);
     //   });
 
-
     // entrancePointList
-    //   .filter((f) => f.properties.floor == nextFloor.index)
+    //   .filter((f) => f.properties.floor == floorIndex)
     //   .map((entrancePoint) => {
-    //     ShowEntrancePoint(entrancePoint, map!);
+    //     ShowEntrancePoint(entrancePoint, map);
     //   });
 
     advancedPointList
-      .filter((f) => f.properties.floor == nextFloor.index)
+      .filter((f) => f.properties.floor == floorIndex)
       .map((advancedPoint) => {
-        ShowAdvancedPoint(advancedPoint, map!);
+        ShowAdvancedPoint(advancedPoint, map);
       });
 
     pathList
-      .filter((f) => f.properties.floor == nextFloor.index)
+      .filter((f) => f.properties.floor == floorIndex)
       .map((path) => {
         ShowPath(path, map!);
       });
-      
+
     routeList
-      .filter((f) => f.floor == nextFloor.index)
+      .filter((f) => f.floor == floorIndex)
       .map((route) => {
-        ShowRoute(route.path, map!);
+        ShowRoute(route.path, map);
       });
+
+    if (solid.features.length > 0) {
+      const featuresToShow = solid.features.filter((f) => f.properties.floor == floorIndex);
+      const solidToShow: Solid = {
+        type: 'FeatureCollection',
+        features: featuresToShow,
+      };
+      ShowSolid(solidToShow, map);
+    }
   }
 
-  
   function ClearRouteLayers() {
-    if(map == null) return;
-    map.getStyle().layers.forEach(layer => {
+    if (map == null) return;
+    map.getStyle().layers.forEach((layer) => {
       if (layer.id.startsWith('route-layer')) {
         if (map.getLayer(layer.id)) {
           map.removeLayer(layer.id);
@@ -75,11 +95,11 @@ function Floors() {
   }
 
   function ClearLayers() {
-    if(map == null) return;
- 
-    map.getStyle().layers.forEach(layer => {
-      if(layer.id.startsWith('_c_')){   
-        console.log("TEMIZLENMEK ISTENEN", layer);
+    if (map == null) return;
+
+    map.getStyle().layers.forEach((layer) => {
+      if (layer.id.startsWith('_c_')) {
+        console.log('TEMIZLENMEK ISTENEN', layer);
         if (map.getLayer(layer.id)) {
           map.removeLayer(layer.id);
         }
@@ -89,12 +109,13 @@ function Floors() {
       }
     });
   }
-  
+
   return (
     <ListGroup className="shadow">
       <ListGroup.Item className="bg-light text-primary fw-bold">Kat Listesi</ListGroup.Item>
       <ListGroup.Item className="p-0 border-0">
-        {floorList != null && map != null &&
+        {floorList != null &&
+          map != null &&
           floorList.map((floor) => {
             const active = currentFloor != null && floor.id == currentFloor.id;
             return (
