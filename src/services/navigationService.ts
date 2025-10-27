@@ -7,9 +7,9 @@ import maplibregl from 'maplibre-gl';
 import { HideAllEntrancePoints } from './entrancePointService';
 
 
-  const imageUrlCurrent = 'http://192.168.1.145:5000/api/polygon/uploads/point_current.png';
-  const imageUrlStart = 'http://192.168.1.145:5000/api/polygon/uploads/point_start.png';
-  const imageUrlTarget = 'http://192.168.1.145:5000/api/polygon/uploads/point_target.png';
+  const imageUrlCurrent = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_current.png`;
+  const imageUrlStart = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_start.png`;
+  const imageUrlTarget = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_target.png`;
 
 export function ShowRoute(path: Position[], map: maplibregl.Map): void {
   ClearRoutes(map);

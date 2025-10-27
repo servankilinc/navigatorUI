@@ -21,6 +21,7 @@ import Floors from "./components/Floors";
 import GraphBaseModel from "./models/GraphBaseModel";
 
 function App() {
+  console.log(import.meta.env)
   const dispatch = useAppDispatch();
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
@@ -31,13 +32,13 @@ function App() {
 
   async function FetchData() {
     try {
-      const res_advancedPoint = await fetch("http://192.168.1.145:5000/api/advancedPoint");
-      const res_entrancePoint = await fetch("http://192.168.1.145:5000/api/entrancePoint");
-      const res_floor = await fetch("http://192.168.1.145:5000/api/floor");
-      const res_graph = await fetch("http://192.168.1.145:5000/api/graph");
-      const res_path = await fetch("http://192.168.1.145:5000/api/path");
-      const res_polygon = await fetch("http://192.168.1.145:5000/api/polygon");
-      const res_solid = await fetch("http://192.168.1.145:5000/api/solid");
+      const res_advancedPoint = await fetch(`${import.meta.env.VITE_API_URL}/api/advancedPoint`);
+      const res_entrancePoint = await fetch(`${import.meta.env.VITE_API_URL}/api/entrancePoint`);
+      const res_floor = await fetch(`${import.meta.env.VITE_API_URL}/api/floor`);
+      const res_graph = await fetch(`${import.meta.env.VITE_API_URL}/api/graph`);
+      const res_path = await fetch(`${import.meta.env.VITE_API_URL}/api/path`);
+      const res_polygon = await fetch(`${import.meta.env.VITE_API_URL}/api/polygon`);
+      const res_solid = await fetch(`${import.meta.env.VITE_API_URL}/api/solid`);
       
 
       const data_advancedPoint: AdvancedPointGeoJson[] = await res_advancedPoint.json();

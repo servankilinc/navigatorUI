@@ -100,7 +100,7 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
 
   // İkon henüz yüklenmemişse yükle
   if (!map.hasImage(iconId)) {
-    const image = await map.loadImage('http://192.168.1.145:5000/api/polygon/' + polygon.properties.iconSource);
+    const image = await map.loadImage(`${import.meta.env.VITE_API_URL}/api/polygon/${polygon.properties.iconSource}`);
 
     map.addImage(iconId, image.data);
   }
