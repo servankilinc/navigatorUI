@@ -3,7 +3,7 @@ import Solid from '../models/Solid';
 import maplibregl from 'maplibre-gl';
 
 export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void {
-  const sourceId = `_c_${polygon.geometry.type}-${polygon.properties.id}`;
+  const sourceId = `_polygon_${polygon.properties.id}`;
 
   // **Eğer kaynak zaten ekliyse, sadece veriyi güncelle**
   if (map.getSource(sourceId)) {
@@ -16,14 +16,13 @@ export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void 
     data: polygon,
   });
 
-  // **Poligon katmanını ekle**
   map.addLayer({
     id: sourceId,
     type: 'fill',
     source: sourceId,
     paint: {
-      'fill-color': '#888888', // Poligonun rengi (değiştirilebilir)
-      'fill-opacity': 0.5, // Opaklık
+      'fill-color': '#888888',
+      'fill-opacity': 0.5,
     },
   });
 }
@@ -43,6 +42,7 @@ export function ShowSolid(solid: Solid, map: maplibregl.Map): void {
   });
 
   // map.removeLayer("floorplan")
+  const beforeLayerId = getBeforeLayerIdOfSolid(map);
   map.addLayer({
     id: sourceId,
     type: 'fill-extrusion',
@@ -52,12 +52,18 @@ export function ShowSolid(solid: Solid, map: maplibregl.Map): void {
       'fill-extrusion-height': ['get', 'height'],
       'fill-extrusion-base': ['get', 'base_height'],
       'fill-extrusion-opacity': 1,
-    },
-  });
+    }
+  }, beforeLayerId?? undefined);
+}
+
+function getBeforeLayerIdOfSolid(map: maplibregl.Map){
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter(l => l.id.startsWith('_logo'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
 }
 
 export function HidePolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void {
-  const sourceId = `_c_${polygon.geometry.type}-${polygon.properties.id}`;
+  const sourceId = `_polygon_${polygon.properties.id}`;
 
   // **Katmanı kaldır**
   if (map.getLayer(sourceId)) {
@@ -75,7 +81,7 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
   const sourceId = `_logo_${polygon.properties.id}`;
   const iconId = `${sourceId}_${polygon.properties.iconSource}`;
 
-  const positionLogo = getPolygonCenter(polygon); // [33.087147, 39.091641];
+  const positionLogo = getPolygonCenter(polygon);
 
   const pointGeoJson: GeoJSON.Feature<GeoJSON.Point> = {
     type: 'Feature',
@@ -86,51 +92,46 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
     },
   };
 
-  // 1️⃣ Kaynak varsa güncelle
+  // Kaynak varsa güncelle
   if (map.getSource(sourceId)) {
     (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
     return;
   }
 
-  // 2️⃣ İkon henüz yüklenmemişse yükle
+  // İkon henüz yüklenmemişse yükle
   if (!map.hasImage(iconId)) {
-    const image = await map.loadImage(polygon.properties.iconSource);
+    const image = await map.loadImage('http://192.168.1.145:5000/api/polygon/' + polygon.properties.iconSource);
 
     map.addImage(iconId, image.data);
-
-    // ikonu ekledikten sonra layer'ı oluştur
-    addLayer();
-  } else {
-    // ikon zaten varsa direkt layer ekle
-    addLayer();
   }
 
-  function addLayer() {
-    // kaynak ekle
-    map.addSource(sourceId, {
-      type: 'geojson',
-      data: pointGeoJson,
-    });
+  // kaynak ekle
+  map.addSource(sourceId, {
+    type: 'geojson',
+    data: pointGeoJson,
+  });
 
-    // layer ekle
-    map.addLayer({
-      id: sourceId,
-      type: 'symbol',
-      source: sourceId,
-      layout: {
-        'icon-image': iconId,
-        'icon-size': 0.15,
-        'icon-anchor': 'bottom',
-      },
-    });
-  }
+  // layer ekle
+  map.addLayer({
+    id: sourceId,
+    type: 'symbol',
+    source: sourceId,
+    layout: {
+      'icon-image': iconId,
+      'icon-size': 0.06,
+      'icon-anchor': 'bottom',
+    },
+  });
 }
 
-
-
 function getPolygonCenter(poly: PolygonGeoJson): [number, number] {
+  if (poly.geometry.coordinates[0].length > 5 && poly.properties.entrance != null) {
+    const ent = poly.properties.entrance.geometry.coordinates;
+    return [ent[0], ent[1]];
+  }
   const ring = poly.geometry.coordinates[0]; // outer ring
-  let x = 0, y = 0;
+  let x = 0,
+    y = 0;
 
   ring.forEach(([lon, lat]) => {
     x += lon;

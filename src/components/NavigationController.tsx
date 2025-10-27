@@ -5,8 +5,8 @@ import { IoNavigateCircle, IoTrash } from 'react-icons/io5';
 import { showAlertError, showAlertSuccess } from '../redux/reducers/alertSlice';
 import Route from '../models/Route';
 import { setRoutes } from '../redux/reducers/storageSlice';
-import { ClearRoutes, GenerateRoutes, ShowRoute } from '../services/navigationService';
-import { ShowEntrancePoint } from '../services/entrancePointService';
+import { ClearRoutes, GenerateRoutes, ShowCurrentPoint, ShowRoute, ShowStartPoint, ShowTargetPoint } from '../services/navigationService';
+import { HideAllEntrancePoints, ShowEntrancePoint } from '../services/entrancePointService';
 
 export default function NavigationController(): React.JSX.Element {
   const dispatch = useAppDispatch();
@@ -30,12 +30,16 @@ export default function NavigationController(): React.JSX.Element {
       const startPoint = entrancePointList.find(f => f.properties.polygonId == startPolyId);
       const targetPoint = entrancePointList.find(f => f.properties.polygonId == targetPolyId);
 
-      if(startPoint) ShowEntrancePoint(startPoint, map);
-      if(targetPoint) ShowEntrancePoint(targetPoint, map);
-
       // Show 
       const currentResult = tempRouteList.find(f => f.floor== currentFloor?.index);
       if(currentResult != null) {
+        if(startPoint) ShowEntrancePoint(startPoint, map);
+        if(targetPoint) ShowEntrancePoint(targetPoint, map);
+        
+        ShowCurrentPoint(currentResult.path[4], map) // burası dinamik değişmeli
+        ShowStartPoint(currentResult.path[0], map);
+        ShowTargetPoint(currentResult.path[currentResult.path.length], map)
+
         ShowRoute(currentResult.path, map!);
       }
 

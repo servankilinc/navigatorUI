@@ -1,4 +1,4 @@
-import { ListGroup } from 'react-bootstrap';
+import { Button, ListGroup } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { setCurrentFloor } from '../redux/reducers/appSlice';
 import { ShowEntrancePoint } from '../services/entrancePointService';
@@ -8,6 +8,7 @@ import { ShowPath } from '../services/pathService';
 import { ShowRoute } from '../services/navigationService';
 import Solid from '../models/Solid';
 import { ShowLogo, ShowSolid } from '../services/polygonService';
+import { useEffect } from 'react';
 
 function Floors() {
   const map = useAppSelector((state) => state.mapReducer.map);
@@ -24,21 +25,14 @@ function Floors() {
 
   const dispath = useAppDispatch();
 
-  function SwipeFloor(floorIndex: number): void {
-    
-    const nextFloor = floorList.find((f) => f.index == floorIndex)!;
-    
-    dispath(setCurrentFloor(nextFloor));
-    ClearLayers();
-    
+  useEffect(() => {
     if (!map) return;
+    if (!currentFloor) return;
+    
+    const floorIndex = currentFloor?.index;
     const symbolLayer = map.getStyle().layers;
-    console.log("LAYERS => ", symbolLayer)
-    polygonList
-      .filter((f) => f.properties.floor == floorIndex)
-      .map((polygon) => {
-        ShowLogo(polygon, map);
-      });
+
+
 
     // polygonList
     //   .filter((f) => f.properties.floor == floorIndex)
@@ -78,6 +72,20 @@ function Floors() {
       };
       ShowSolid(solidToShow, map);
     }
+
+    polygonList
+      .filter((f) => f.properties.floor == floorIndex)
+      .map((polygon) => {
+        ShowLogo(polygon, map);
+      });
+  },[currentFloor, map])
+
+  function SwipeFloor(floorIndex: number): void {
+    
+    const nextFloor = floorList.find((f) => f.index == floorIndex)!;
+    
+    dispath(setCurrentFloor(nextFloor));
+    ClearLayers();
   }
 
   function ClearRouteLayers() {
@@ -112,6 +120,11 @@ function Floors() {
 
   return (
     <ListGroup className="shadow">
+      <ListGroup.Item className="bg-light text-primary fw-bold">
+        <Button variant='danger' onClick={() => {console.log(map?.getStyle().layers)}}>
+          Layer Gettir
+        </Button>
+      </ListGroup.Item>
       <ListGroup.Item className="bg-light text-primary fw-bold">Kat Listesi</ListGroup.Item>
       <ListGroup.Item className="p-0 border-0">
         {floorList != null &&

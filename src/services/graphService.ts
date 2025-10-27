@@ -34,7 +34,6 @@ export function DesignGraph(): void
 
 export function FindNearestNode(coordinate: Position, floor: number): Node
 {
-  debugger;
   let nearestNode: Node | undefined = undefined;
   let minDistance = Infinity;
 
