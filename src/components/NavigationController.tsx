@@ -6,7 +6,7 @@ import { showAlertError, showAlertSuccess } from '../redux/reducers/alertSlice';
 import Route from '../models/Route';
 import { setRoutes } from '../redux/reducers/storageSlice';
 import { ClearRoutes, GenerateRoutes, ShowCurrentPoint, ShowRoute, ShowStartPoint, ShowTargetPoint } from '../services/navigationService';
-import { HideAllEntrancePoints, ShowEntrancePoint } from '../services/entrancePointService';
+import { ShowEntrancePoint } from '../services/entrancePointService';
 
 export default function NavigationController(): React.JSX.Element {
   const dispatch = useAppDispatch();
@@ -35,10 +35,8 @@ export default function NavigationController(): React.JSX.Element {
       if(currentResult != null) {
         if(startPoint) ShowEntrancePoint(startPoint, map);
         if(targetPoint) ShowEntrancePoint(targetPoint, map);
-        
-        ShowCurrentPoint(currentResult.path[4], map) // burası dinamik değişmeli
         ShowStartPoint(currentResult.path[0], map);
-        ShowTargetPoint(currentResult.path[currentResult.path.length], map)
+        ShowTargetPoint(currentResult.path[currentResult.path.length -1], map)
 
         ShowRoute(currentResult.path, map!);
       }

@@ -1,7 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import maplibregl from 'maplibre-gl';
-// import * as mLibre from '@vis.gl/react-maplibre';
-
 
 interface StateUI {
   map: maplibregl.Map | undefined;

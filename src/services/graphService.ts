@@ -1,37 +1,12 @@
 import * as turf from '@turf/turf';
-import { alg, Graph as gGraph } from 'graphlib';
+import { alg } from 'graphlib';
 import { Position } from 'geojson';
 import { store } from '../redux/store';
 import Node from '../models/Node';
-import { designGraphList } from '../redux/reducers/storageSlice';
-import DesignGraphModel from '../models/UIModels/DesignGraphListModel';
 import PolygonGeoJson from '../models/Features/PolygonGeoJson';
 import { AdvancedPointDirectionTypesEnums } from '../models/UIModels/AdvancedPointDirectionTypes';
 import AdvancedPointGeoJson from '../models/Features/AdvancedPointGeoJson';
-
-export function DesignGraph(): void
-{
-  const tempArray: DesignGraphModel[] = [];
  
-  const graphList = store.getState().storageReducer.graphList;
-  graphList.map((graphData) => { 
-    const floorGraphModel: DesignGraphModel ={
-      floor: graphData.floor,
-      gGraph: new gGraph()
-    }
-
-    graphData.edges.forEach((edge) => {
-      floorGraphModel.gGraph.setNode(edge.source);
-      floorGraphModel.gGraph.setNode(edge.target);
-      floorGraphModel.gGraph.setEdge(edge.source, edge.target, edge.weight);
-    })
-    tempArray.push(floorGraphModel);
-  });
-
-  store.dispatch(designGraphList(tempArray));
-}
-
-
 export function FindNearestNode(coordinate: Position, floor: number): Node
 {
   let nearestNode: Node | undefined = undefined;

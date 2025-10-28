@@ -1,6 +1,6 @@
 import "./App.css";
-import { useEffect } from "react";
-import { Col, Row, Stack } from "react-bootstrap";
+import { useEffect, useState } from "react";
+import { Button, Col, Row, Stack } from "react-bootstrap";
 import NavigationController from "./components/NavigationController";
 import AlertSuccess from "./components/alerts/AlertSuccess";
 import AlertError from "./components/alerts/AlertError";
@@ -13,22 +13,52 @@ import Graph from "./models/Graph";
 import LineStringGeoJson from "./models/Features/LineStringGeoJson";
 import PolygonGeoJson from "./models/Features/PolygonGeoJson";
 import { setAdvancedPointList, setEntrancePointList, setFloorList, setGraphList, setPathList, setPolygonList, setSolidFeatures} from "./redux/reducers/storageSlice";
-import { showAlertError, showAlertSuccess } from "./redux/reducers/alertSlice";
-import { setCurrentFloor } from "./redux/reducers/appSlice";
-import { DesignGraph } from "./services/graphService";
+import { showAlertError } from "./redux/reducers/alertSlice";
+import { setCurrentFloor, setCurrentLocation, setIsWatcherEnable } from "./redux/reducers/appSlice";
 import Solid from "./models/Solid";
 import Floors from "./components/Floors";
 import GraphBaseModel from "./models/GraphBaseModel";
+import { StartWatch } from "./services/locationService";
+import { store } from "./redux/store";
+import Route from "./models/Route";
+import { ShowCurrentPoint, ShowNextRoute } from "./services/navigationService";
+import { Position } from "geojson";
 
 function App() {
-  console.log(import.meta.env)
   const dispatch = useAppDispatch();
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
+  const map = useAppSelector(state => state.mapReducer.map);
+  const isWatcherEnbale = useAppSelector(state => state.appReducer.isWatcherEnable);
 
-  useEffect(() => {
+  useEffect(() => { 
+    StartWatch(HandlePositionChange, HandleWatchError);
     FetchData();
   }, []);
+ 
+ 
+  function HandlePositionChange(position: GeolocationPosition | undefined): void {
+    if(isWatcherEnbale != true) dispatch(setIsWatcherEnable(true));
+    
+    if(!map || !currentFloor) return;
+    const routeList: Route[] = store.getState().storageReducer.routeList;
+    const route = routeList.find(f => f.floor === currentFloor.index);
+    if(!route) return;
+
+    const currentPosition: Position = position != undefined ? [position.coords.longitude, position.coords.latitude] : [32.4837723400532, 37.8755113836849];
+
+    console.log("YOL CİZİLECEK", route.path)
+
+    ShowCurrentPoint(currentPosition, map);
+    ShowNextRoute(route, currentPosition, map);
+
+    dispatch(setCurrentLocation(currentPosition));
+  }
+  
+  function HandleWatchError(err: string | GeolocationPositionError): void {
+    alert("ON ERROR => " + JSON.stringify(err))
+    if(isWatcherEnbale != false) dispatch(setIsWatcherEnable(false));
+  }
 
   async function FetchData() {
     try {
@@ -76,9 +106,6 @@ function App() {
       // dispatch(showAlertSuccess({ message: "Veriler başarıyal getirildi." }));
 
       dispatch(setCurrentFloor(data_floor.some((f) => f.index == 0) ? data_floor.find((f) => f.index == 0)! : data_floor[0]!));
-
-      // Design Graph for algorithims
-      // DesignGraph();
     }
     catch (error) {
       dispatch(showAlertError({ message: "Veriler getirilirken hata oluştu." }));
@@ -90,6 +117,9 @@ function App() {
         <Col lg={9}>{currentFloor != null && <Map />}</Col>
         <Col lg={3}>
           <Stack gap={4}>
+            <Button onClick={() => HandlePositionChange(undefined)}>
+              FIND 
+            </Button>
             <Floors />
             <NavigationController />
           </Stack>
@@ -102,3 +132,6 @@ function App() {
 }
 
 export default App;
+
+
+

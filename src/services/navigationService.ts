@@ -5,60 +5,115 @@ import Route from '../models/Route';
 import e7 from '../scripts/idGenerator';
 import maplibregl from 'maplibre-gl';
 import { HideAllEntrancePoints } from './entrancePointService';
+import * as turf from '@turf/turf'
 
-
-  const imageUrlCurrent = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_current.png`;
-  const imageUrlStart = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_start.png`;
-  const imageUrlTarget = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_target.png`;
+const imageUrlCurrent = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_current.png`;
+const imageUrlStart = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_start.png`;
+const imageUrlTarget = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_target.png`;
 
 export function ShowRoute(path: Position[], map: maplibregl.Map): void {
   ClearRoutes(map);
 
-  const sourceId = `_c_route-layer`;
+  const sourceId = `_c_route_layer`;
+ 
+  map.addSource(sourceId, { 
+    type: 'geojson', 
+    data: { 
+      type: 'Feature',
+      geometry: { 
+        type: 'LineString', 
+        coordinates: path
+      }, 
+      properties: {} 
+    } 
+  });
+  
+  // rota _c_SolidOfFloor den önce eklensin
+  const beforeLayer = map.getLayer('_c_SolidOfFloor');
 
-  if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: [] }, properties: {} } });
-
+  // burası konum servisinden gelecek 
+  let isLocationAvailable = store.getState().appReducer.isWatcherEnable;
+  if(isLocationAvailable == false){
     map.addLayer({
       id: sourceId,
       type: 'line',
       source: sourceId,
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: {
-        'line-color': 'orange',
-        'line-width': 6,
-        'line-opacity': 1,
-        'line-dasharray': [2, 2], // noktalı çizgi
+      'line-color':  '#009CDF',
+        'line-width': 8
       },
-    });
+    }, beforeLayer ? beforeLayer.id : undefined);
   }
-
-  // Animasyon: koordinatları yavaşça ekle
-  let i = 0;
-  const coords: Position[] = [];
-
-  function drawStep() {
-    if (i >= path.length) return;
-    coords.push(path[i]);
-    i++;
-
-    const source = map.getSource(sourceId) as maplibregl.GeoJSONSource;
-    source.setData({ type: 'Feature', geometry: { type: 'LineString', coordinates: coords }, properties: {} });
-
-    requestAnimationFrame(drawStep); // Her frame'de bir sonraki noktayı ekle
+  else{ 
+    map.addLayer({
+      id: sourceId,
+      type: 'line',
+      source: sourceId,
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color':  '#cacacaff',
+        'line-width': 8,
+        'line-dasharray': [2, 2],
+      },
+    }, beforeLayer ? beforeLayer.id : undefined);  
   }
+}
 
-  drawStep();
+export function ShowNextRoute(route: Route, currentPosition: Position, map: maplibregl.Map): void {
+   
+  const sourceId = `_c_next_route_layer`;
+ 
+  const path: Position[] = CalculateRemaindPath(route, currentPosition);
+
+  map.addSource(sourceId, { 
+    type: 'geojson', 
+    data: { 
+      type: 'Feature',
+      geometry: { 
+        type: 'LineString', 
+        coordinates: path
+      }, 
+      properties: {} 
+    } 
+  });
+  
+  // rota _c_SolidOfFloor den önce eklensin
+  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  map.addLayer({
+    id: sourceId,
+    type: 'line',
+    source: sourceId,
+    layout: { 'line-cap': 'round', 'line-join': 'round' },
+    paint: {
+      'line-color':  'orange',
+      'line-width': 8,
+    },
+  }, beforeLayer ? beforeLayer.id : undefined);
 }
 
 
-export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) {
-  const sourceId = `_point_current_`; 
+function CalculateRemaindPath(route: Route, currentPosition: Position): Position[] {
+  const path = [...route.path]
 
-  if (!map.hasImage(sourceId)) {
-    const image = await map.loadImage(imageUrlCurrent);
-    map.addImage(sourceId, image.data);
+  let indexOfMinDistance = 0;
+  let mindistance = -1;
+
+  for(let i = 0; i < path.length; i++){
+    const route_pos = path[i];
+    const distance = turf.distance(turf.point(route_pos), turf.point(currentPosition));
+    if (mindistance == -1 || distance < mindistance) {
+      indexOfMinDistance = i;
+      mindistance = distance;
+    }
   }
+
+  return path.slice(indexOfMinDistance, path.length);
+}
+
+export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) {
+  const sourceId = `_point_current_`;
+  const sourceImageId = `_point_current_img_`;
 
   const pointGeoJson: GeoJSON.Feature<GeoJSON.Point> = {
     type: 'Feature',
@@ -66,30 +121,45 @@ export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) 
     properties: {},
   };
 
-  // Source ekle veya güncelle
-  if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
-
-    map.addLayer({
-  id: sourceId,
-  type: 'symbol',
-  source: sourceId,
-  layout: {
-          'icon-image': sourceId,
-          'icon-size': 0.05,
-          'icon-anchor': 'bottom',   // alt kısmı koordinata yapışık
-          'icon-allow-overlap': true,
-          'icon-rotate': 30,    // sabit yön
-          'icon-rotation-alignment': 'map',
-  },
-    });
-  } else {
-    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+  if (!map.hasImage(sourceImageId)) {
+    const image = await map.loadImage(imageUrlCurrent); 
+    map.addImage(sourceImageId, image.data);
   }
+
+  if (map.getSource(sourceId)) {
+    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+    map.triggerRepaint();
+    return;
+  }
+
+  map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
+
+  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  map.addLayer(
+    {
+      id: sourceId,
+      type: 'symbol',
+      source: sourceId,
+      layout: {
+        'icon-image': sourceImageId,
+        'icon-size': 0.05,
+        'icon-anchor': 'center', // alt kısmı koordinata yapışık
+        'icon-allow-overlap': true,
+        'icon-rotate': 30, // sabit yön
+        'icon-rotation-alignment': 'map',
+      },
+    },
+    beforeLayer ? beforeLayer.id : undefined
+  );
 }
-export function HideCurrentPoint(map: maplibregl.Map): void { 
+export function HideCurrentPoint(map: maplibregl.Map): void {
   const sourceId = `_point_current_`;
- 
+  const sourceImageId = `_point_current_img_`;
+  
+  if (map.hasImage(sourceImageId)) {
+    map.removeImage(sourceImageId);
+  }
+
   if (map.getLayer(sourceId)) {
     map.removeLayer(sourceId);
   }
@@ -98,15 +168,10 @@ export function HideCurrentPoint(map: maplibregl.Map): void {
     map.removeSource(sourceId);
   }
 }
-
 
 export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
   const sourceId = `_point_start_`;
-
-  if (!map.hasImage(sourceId)) {
-    const image = await map.loadImage(imageUrlStart);
-    map.addImage(sourceId, image.data);
-  }
+  const sourceImageId = `_point_start_img_`;
 
   const pointGeoJson: GeoJSON.Feature<GeoJSON.Point> = {
     type: 'Feature',
@@ -114,30 +179,44 @@ export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
     properties: {},
   };
 
-  // Source ekle veya güncelle
-  if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
-
-    map.addLayer({
-  id: sourceId,
-  type: 'symbol',
-  source: sourceId,
-  layout: {
-          'icon-image': sourceId,
-          'icon-size': 0.05,
-          'icon-anchor': 'bottom',   // alt kısmı koordinata yapışık
-          'icon-allow-overlap': true,
-          'icon-rotate': 30,    // sabit yön
-          'icon-rotation-alignment': 'map',
-  },
-    });
-  } else {
-    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+  if (!map.hasImage(sourceImageId)) {
+    const image = await map.loadImage(imageUrlStart);
+    map.addImage(sourceImageId, image.data);
   }
+
+  if (map.getSource(sourceId)) {
+    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+    return;
+  }
+
+  map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
+
+  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  map.addLayer(
+    {
+      id: sourceId,
+      type: 'symbol',
+      source: sourceId,
+      layout: {
+        'icon-image': sourceImageId,
+        'icon-size': 0.04,
+        'icon-anchor': 'center', // alt kısmı koordinata yapışık
+        'icon-allow-overlap': true,
+        'icon-rotate': 30, // sabit yön
+        'icon-rotation-alignment': 'map',
+      },
+    },
+    beforeLayer ? beforeLayer.id : undefined
+  );
 }
-export function HideStartPoint(map: maplibregl.Map): void { 
+export function HideStartPoint(map: maplibregl.Map): void {
   const sourceId = `_point_start_`;
- 
+  const sourceImageId = `_point_start_img_`;
+
+  if (map.hasImage(sourceImageId)) {
+    map.removeImage(sourceImageId);
+  }
+  
   if (map.getLayer(sourceId)) {
     map.removeLayer(sourceId);
   }
@@ -146,46 +225,55 @@ export function HideStartPoint(map: maplibregl.Map): void {
     map.removeSource(sourceId);
   }
 }
-
 
 export async function ShowTargetPoint(position: Position, map: maplibregl.Map) {
   const sourceId = `_point_target_`;
-
-  if (!map.hasImage(sourceId)) {
-    const image = await map.loadImage(imageUrlTarget);
-    map.addImage(sourceId, image.data);
-  }
+  const sourceImageId = `_point_target_img_`;
 
   const pointGeoJson: GeoJSON.Feature<GeoJSON.Point> = {
     type: 'Feature',
     geometry: { type: 'Point', coordinates: position },
     properties: {},
   };
-
-  // Source ekle veya güncelle
-  if (!map.getSource(sourceId)) {
-    map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
-
-    map.addLayer({
-  id: sourceId,
-  type: 'symbol',
-  source: sourceId,
-  layout: {
-          'icon-image': sourceId,
-          'icon-size': 0.05,
-          'icon-anchor': 'bottom',   // alt kısmı koordinata yapışık
-          'icon-allow-overlap': true,
-          'icon-rotate': 30,    // sabit yön
-          'icon-rotation-alignment': 'map',
-  },
-    });
-  } else {
-    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+  
+  if (!map.hasImage(sourceImageId)) {
+    const image = await map.loadImage(imageUrlTarget);
+    map.addImage(sourceImageId, image.data);
   }
+
+  if (map.getSource(sourceId)) {
+    (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(pointGeoJson);
+    return;
+  }
+
+  map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
+
+  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  map.addLayer(
+    {
+      id: sourceId,
+      type: 'symbol',
+      source: sourceId,
+      layout: {
+        'icon-image': sourceImageId,
+        'icon-size': 0.04,
+        'icon-anchor': 'center', // alt kısmı koordinata yapışık
+        'icon-allow-overlap': true,
+        'icon-rotate': 30, // sabit yön
+        'icon-rotation-alignment': 'map',
+      },
+    },
+    beforeLayer ? beforeLayer.id : undefined
+  );
 }
-export function HideTargetPoint(map: maplibregl.Map): void { 
+export function HideTargetPoint(map: maplibregl.Map): void {
   const sourceId = `_point_target_`;
- 
+  const sourceImageId = `_point_target_img_`;
+
+  if (map.hasImage(sourceImageId)) {
+    map.removeImage(sourceImageId);
+  }
+  
   if (map.getLayer(sourceId)) {
     map.removeLayer(sourceId);
   }
@@ -194,7 +282,6 @@ export function HideTargetPoint(map: maplibregl.Map): void {
     map.removeSource(sourceId);
   }
 }
-
 
 export function ClearRoutes(map: maplibregl.Map): void {
   HideAllEntrancePoints();
@@ -202,7 +289,7 @@ export function ClearRoutes(map: maplibregl.Map): void {
   HideCurrentPoint(map);
   HideTargetPoint(map);
 
-  const sourceId = `_c_route-layer`;
+  const sourceId = `_c_route_layer`;
 
   // **Katmanı ve Kaynağı kontrol et ve kaldır**
   if (map.getLayer(sourceId)) {
@@ -275,3 +362,4 @@ export function GenerateRoutes(startPolyId: string, targetPolyId: string) {
   }
   return tempRouteList;
 }
+

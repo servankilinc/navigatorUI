@@ -1,6 +1,8 @@
 import EntrancePointGeoJson from '../models/Features/EntrancePointGeoJson';
 import maplibregl from 'maplibre-gl';
+
 const entranceMarkers: Record<string, maplibregl.Marker> = {};
+
 export function ShowEntrancePoint(entrancePoint: EntrancePointGeoJson, map: maplibregl.Map): void {
   const sourceId = `_entrancePoint_${entrancePoint.properties.id}`;
 

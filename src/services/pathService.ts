@@ -4,20 +4,19 @@ import maplibregl from 'maplibre-gl';
 export function ShowPath(path: LineStringGeoJson, map: maplibregl.Map): void {
   const sourceId = `_path_${path.properties.id}`;
 
-  // **Eğer kaynak zaten ekliyse, sadece veriyi güncelle**
   if (map.getSource(sourceId)) {
     (map.getSource(sourceId) as maplibregl.GeoJSONSource).setData(path);
     return;
   }
 
-  // GeoJSON Kaynağını Ekle**
   map.addSource(sourceId, {
     type: 'geojson',
     data: path,
   });
 
-  const beforeLayer = map.getLayer('_c_SolidOfFloor');
-  // Çizgi Katmanını Ekle**
+
+  // yollar varsa _c_route_layer den önce yoksa _c_SolidOfFloor den önce eklensin
+  const beforeLayer = map.getLayer('_c_route_layer') ?? map.getLayer('_c_SolidOfFloor');
   map.addLayer(
     {
       id: sourceId,
@@ -32,18 +31,18 @@ export function ShowPath(path: LineStringGeoJson, map: maplibregl.Map): void {
         'line-width': 10,
         'line-opacity': 1,
       },
-    }, beforeLayer ? '_c_SolidOfFloor' : undefined
+    },
+    beforeLayer ? '_c_SolidOfFloor' : undefined
   );
 }
 
 export function HidePath(path: LineStringGeoJson, map: maplibregl.Map): void {
   const sourceId = `_path_${path.properties.id}`;
 
-  // **Eğer katman yoksa hata fırlatmadan çık**
-  if (!map.getLayer(sourceId)) return;
+  if (map.getLayer(sourceId)) {
+    map.removeLayer(sourceId);
+  }
 
-  // **Katmanı ve kaynağı kaldır**
-  map.removeLayer(sourceId);
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId);
   }

@@ -81,11 +81,12 @@ function Floors() {
   },[currentFloor, map])
 
   function SwipeFloor(floorIndex: number): void {
+    // ClearLayers();
+    // ClearRouteLayers();
     
     const nextFloor = floorList.find((f) => f.index == floorIndex)!;
     
     dispath(setCurrentFloor(nextFloor));
-    ClearLayers();
   }
 
   function ClearRouteLayers() {
@@ -106,8 +107,7 @@ function Floors() {
     if (map == null) return;
 
     map.getStyle().layers.forEach((layer) => {
-      if (layer.id.startsWith('_c_')) {
-        console.log('TEMIZLENMEK ISTENEN', layer);
+      if (layer.id.startsWith('_')) {
         if (map.getLayer(layer.id)) {
           map.removeLayer(layer.id);
         }
