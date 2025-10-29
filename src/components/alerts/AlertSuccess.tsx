@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { closeAlertSuccess } from '../../redux/reducers/alertSlice';
-import { Modal } from 'react-bootstrap';
-import { FaCircleCheck } from 'react-icons/fa6';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { CheckCircle2Icon } from 'lucide-react';
+
 export default function AlertSuccess(): React.JSX.Element {
   const dispatch = useAppDispatch();
 
@@ -22,19 +24,25 @@ export default function AlertSuccess(): React.JSX.Element {
     }
   }, [_showStatus]);
 
-  const handleClose = () => dispatch(closeAlertSuccess());
+  const handleShowChanges = (isOpen: boolean) => {
+    if (!isOpen) dispatch(closeAlertSuccess());
+  };
+  
   return (
-    <Modal show={_showStatus} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <FaCircleCheck size={45} color="#26A560" />
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body className='p-4'>
-        <h4 className='text-center'>
-          {_message}
-        </h4>
-      </Modal.Body>
-    </Modal>
+    <AlertDialog open={_showStatus} onOpenChange={(isOpen) => handleShowChanges(isOpen)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            <Alert>
+              <CheckCircle2Icon color="#26A560" />
+              <AlertTitle>{_message}</AlertTitle>
+            </Alert>
+          </AlertDialogTitle>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Close</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

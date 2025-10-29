@@ -1,24 +1,25 @@
-import { Button, ListGroup } from 'react-bootstrap';
 import { useAppDispatch, useAppSelector } from '../redux/hooks';
 import { setCurrentFloor } from '../redux/reducers/appSlice';
-import { ShowEntrancePoint } from '../services/entrancePointService';
 import { ShowAdvancedPoint } from '../services/advancedPointService';
 import { ShowPath } from '../services/pathService';
-// import CustomLayer from '../models/Features/CustomLayer';
 import { ShowRoute } from '../services/navigationService';
 import Solid from '../models/Solid';
-import { ShowLogo, ShowSolid } from '../services/polygonService';
+import { ShowLogo, ShowPolygon, ShowSolid } from '../services/polygonService';
 import { useEffect } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
+import { BetweenHorizontalEnd } from 'lucide-react';
+import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
 
 function Floors() {
   const map = useAppSelector((state) => state.mapReducer.map);
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
+  const currentLayerType = useAppSelector((state) => state.appReducer.layerType);
 
   const floorList = useAppSelector((state) => state.storageReducer.floorList);
   const polygonList = useAppSelector((state) => state.storageReducer.polygons);
   const pathList = useAppSelector((state) => state.storageReducer.paths);
-  const entrancePointList = useAppSelector((state) => state.storageReducer.entrancePoints);
   const advancedPointList = useAppSelector((state) => state.storageReducer.advancedPoints);
   const routeList = useAppSelector((state) => state.storageReducer.routeList);
   const solid = useAppSelector((state) => state.storageReducer.solid);
@@ -28,64 +29,35 @@ function Floors() {
   useEffect(() => {
     if (!map) return;
     if (!currentFloor) return;
-    
+
     const floorIndex = currentFloor?.index;
-    const symbolLayer = map.getStyle().layers;
 
+    advancedPointList.filter((f) => f.properties.floor == floorIndex).map((advancedPoint) => ShowAdvancedPoint(advancedPoint, map));
+    pathList.filter((f) => f.properties.floor == floorIndex).map((path) => ShowPath(path, map!));
+    routeList.filter((f) => f.floor == floorIndex).map((route) => ShowRoute(route.path, map));
 
-
-    // polygonList
-    //   .filter((f) => f.properties.floor == floorIndex)
-    //   .map((polygon) => {
-    //     ShowPolygon(polygon, map!);
-    //   });
-
-    // entrancePointList
-    //   .filter((f) => f.properties.floor == floorIndex)
-    //   .map((entrancePoint) => {
-    //     ShowEntrancePoint(entrancePoint, map);
-    //   });
-
-    advancedPointList
-      .filter((f) => f.properties.floor == floorIndex)
-      .map((advancedPoint) => {
-        ShowAdvancedPoint(advancedPoint, map);
-      });
-
-    pathList
-      .filter((f) => f.properties.floor == floorIndex)
-      .map((path) => {
-        ShowPath(path, map!);
-      });
-
-    routeList
-      .filter((f) => f.floor == floorIndex)
-      .map((route) => {
-        ShowRoute(route.path, map);
-      });
-
-    if (solid.features.length > 0) {
+    if (currentLayerType === LayerTypesEnum.UcBoyut) {
       const featuresToShow = solid.features.filter((f) => f.properties.floor == floorIndex);
       const solidToShow: Solid = {
         type: 'FeatureCollection',
         features: featuresToShow,
       };
       ShowSolid(solidToShow, map);
+    } 
+    else {
+      polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowPolygon(polygon, map));
     }
 
-    polygonList
-      .filter((f) => f.properties.floor == floorIndex)
-      .map((polygon) => {
-        ShowLogo(polygon, map);
-      });
-  },[currentFloor, map])
+    polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLogo(polygon, map));
+
+  }, [currentFloor, map]);
 
   function SwipeFloor(floorIndex: number): void {
     // ClearLayers();
     // ClearRouteLayers();
-    
+
     const nextFloor = floorList.find((f) => f.index == floorIndex)!;
-    
+
     dispath(setCurrentFloor(nextFloor));
   }
 
@@ -118,27 +90,34 @@ function Floors() {
     });
   }
 
+  if (!map || !floorList  ) return <></>;
+
   return (
-    <ListGroup className="shadow">
-      <ListGroup.Item className="bg-light text-primary fw-bold">
-        <Button variant='danger' onClick={() => {console.log(map?.getStyle().layers)}}>
-          Layer Gettir
-        </Button>
-      </ListGroup.Item>
-      <ListGroup.Item className="bg-light text-primary fw-bold">Kat Listesi</ListGroup.Item>
-      <ListGroup.Item className="p-0 border-0">
-        {floorList != null &&
-          map != null &&
-          floorList.map((floor) => {
-            const active = currentFloor != null && floor.id == currentFloor.id;
-            return (
-              <ListGroup.Item key={floor.id} onClick={() => SwipeFloor(floor.index)} className={`fw-light text-start`} active={active}>
-                {floor.name}
-              </ListGroup.Item>
-            );
-          })}
-      </ListGroup.Item>
-    </ListGroup>
+    <Card className="absolute bottom-10 2xl:right-105 right-20 m-0 p-1">
+      <CardContent className="p-0 m-0">
+        <Item className={'py-2 mb-2 bg-white rounded-none border-0 border-neutral-200'}>
+          <ItemContent>
+            <ItemTitle>
+              <BetweenHorizontalEnd size={20} />
+            </ItemTitle>
+          </ItemContent>
+        </Item>
+        {floorList.map((floor) => {
+          const active = currentFloor != null && floor.id == currentFloor.id;
+          return (
+            <Item
+              key={floor.id}
+              onClick={() => SwipeFloor(floor.index)}
+              className={active ? 'py-2 bg-blue-500 text-white' : 'py-2 bg-white text-stone-800 rounded-none border-0 border-neutral-200'}
+            >
+              <ItemContent className="flex items-center">
+                <ItemTitle>{floor.index}</ItemTitle>
+              </ItemContent>
+            </Item>
+          );
+        })}
+      </CardContent>
+    </Card>
   );
 }
 

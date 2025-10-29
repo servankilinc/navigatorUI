@@ -20,8 +20,7 @@ export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void 
     type: 'fill',
     source: sourceId,
     paint: {
-      'fill-color': '#888888',
-      'fill-opacity': 0.5,
+      'fill-color': '#c7d0d8ff', 
     },
   });
 }

@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import Floor from '../../models/Floor';
 import { Position } from 'geojson';
+import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
 
 interface StateUI {
   isEntrancePointAdded: boolean;
   currentFloor: Floor | undefined;
   startLocaltion?: string;
   targetLocaltion?: string;
+  layerType: LayerTypesEnum;
   isWatcherEnable: boolean;
   currentLocation?: Position | undefined;
 }
@@ -14,6 +16,7 @@ interface StateUI {
 const initialState: StateUI = {
   isEntrancePointAdded: true,
   currentFloor: undefined,
+  layerType : LayerTypesEnum.UcBoyut,
   isWatcherEnable: false,
 };
 
@@ -33,6 +36,9 @@ export const appSlice = createSlice({
     setTargetLocation: (state, action: PayloadAction<string>) => {
       state.targetLocaltion = action.payload;
     },
+    setLayerType: (state, action: PayloadAction<LayerTypesEnum>) => {
+      state.layerType = action.payload;
+    },
     setIsWatcherEnable: (state, action: PayloadAction<boolean>) => {
       state.isWatcherEnable = action.payload;
     },
@@ -42,6 +48,6 @@ export const appSlice = createSlice({
   },
 });
 
-export const { setEntranceAdded, setCurrentFloor, setStartLocation, setTargetLocation, setIsWatcherEnable, setCurrentLocation } = appSlice.actions;
+export const { setEntranceAdded, setCurrentFloor, setStartLocation, setTargetLocation, setLayerType, setIsWatcherEnable, setCurrentLocation } = appSlice.actions;
 
 export default appSlice.reducer;

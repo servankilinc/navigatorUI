@@ -1,16 +1,12 @@
 import React, { useEffect } from 'react';
-// import { Map as MapLibreMap } from '@vis.gl/react-maplibre';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import maplibregl from 'maplibre-gl';
-import { useAppDispatch, useAppSelector } from '../redux/hooks';
-import { setMap } from '../redux/reducers/mapSlice';
+import { useAppDispatch } from '../redux/hooks';
+import { setBearing, setMap } from '../redux/reducers/mapSlice';
+import throttle from 'lodash/throttle';
 
 export default function Map(): React.JSX.Element {
   const dispatch = useAppDispatch();
-
-  const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
-  const polygonList = useAppSelector((state) => state.storageReducer.polygons);
-  const map = useAppSelector((state) => state.mapReducer.map);
 
   useEffect(() => {
     const map = new maplibregl.Map({
@@ -24,7 +20,7 @@ export default function Map(): React.JSX.Element {
             tiles: ['https://cartodb-basemaps-a.global.ssl.fastly.net/light_all/{z}/{x}/{y}.png'],
             tileSize: 256,
             minzoom: 0,
-            maxzoom: 21, // tile kaynağı için
+            maxzoom: 20, // tile kaynağı için
           },
         },
         layers: [
@@ -40,10 +36,10 @@ export default function Map(): React.JSX.Element {
           },
         ],
       },
-      center: [32.483570, 37.875672],
-      zoom: 19.5,
-      minZoom: 19, // zoom in (yakınlaşma) sınırı
-      maxZoom: 20, // zoom out (uzaklaşma) sınırı
+      center: [import.meta.env.VITE_CENTER_LNG, import.meta.env.VITE_CENTER_LAT],
+      zoom: import.meta.env.VITE_ZOOM,
+      minZoom: import.meta.env.VITE_MIN_ZOOM,
+      maxZoom: import.meta.env.VITE_MAX_ZOOM,
       pitch: 40,
       bearing: 122,
       // maxBounds: [
@@ -55,14 +51,20 @@ export default function Map(): React.JSX.Element {
     map.on('load', () => {
       dispatch(setMap(map));
     });
+    
+    const updateBearing = throttle(() => {
+      dispatch(setBearing(map.getBearing()));
+    }, 100);
 
-    return () => map.remove();
-  }, []);
+    dispatch(setBearing(map.getBearing()));
+    map.on('rotate', updateBearing);
 
-  useEffect(() => {
-    if (currentFloor != null && map != null && polygonList.length > 0) {
-    }
-  }, []);
+    
+    return () => {
+      map.off('rotate', updateBearing);
+      map.remove();
+    };
+  }, [dispatch]);
 
-  return <div id="map" style={{ width: '100%', height: '90vh' }}></div>;
+  return <div id="map" className="size-full rounded-2xl shdaow border-1"></div>;
 }

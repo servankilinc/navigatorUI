@@ -1,8 +1,10 @@
 import { useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '../../redux/hooks';
-import { closeAlertError } from '../../redux/reducers/alertSlice'; 
-import { Modal } from 'react-bootstrap';
-import { FaTriangleExclamation } from 'react-icons/fa6';
+import { closeAlertError } from '../../redux/reducers/alertSlice';
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Alert, AlertTitle } from '@/components/ui/alert';
+import { AlertCircleIcon } from 'lucide-react';
+
 export default function AlertError(): React.JSX.Element {
   const dispatch = useAppDispatch();
 
@@ -21,20 +23,26 @@ export default function AlertError(): React.JSX.Element {
       }, _timeOut);
     }
   }, [_showStatus]);
-  const handleClose = () => dispatch(closeAlertError());
+
+  const handleShowChanges = (isOpen: boolean) => {
+    if (!isOpen) dispatch(closeAlertError());
+  };
 
   return (
-    <Modal show={_showStatus} onHide={handleClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>
-          <FaTriangleExclamation size={38} color="#dc2626"/>
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body className='p-4'>
-        <h4 className='text-center'>
-          {_message}
-        </h4>
-      </Modal.Body>
-    </Modal>
+    <AlertDialog open={_showStatus} onOpenChange={(isOpen) => handleShowChanges(isOpen)}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            <Alert variant="destructive">
+              <AlertCircleIcon />
+              <AlertTitle>{_message}</AlertTitle>
+            </Alert>
+          </AlertDialogTitle>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Close</AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
