@@ -52,8 +52,6 @@ function App() {
 
     const currentPosition: Position = position != undefined ? [position.coords.longitude, position.coords.latitude] : [32.4837723400532, 37.8755113836849];
 
-    console.log('YOL CİZİLECEK', route.path);
-
     ShowCurrentPoint(currentPosition, map);
     ShowNextRoute(route, currentPosition, map);
 
@@ -85,7 +83,8 @@ function App() {
       dispatch(setAdvancedPointList(data_advancedPoint));
       dispatch(setEntrancePointList(data_entrancePoint));
       dispatch(setFloorList(data_floor));
-      // if(data_graph && data_graph.length > 0) dispatch(setGraphList(data_graph.map(d => d.mapToGraph())));
+      
+      // GRAPHMODEL to GRAPH CONVERT
       if (data_graph && data_graph.length > 0) {
         const _graphList: Graph[] = [];
         data_graph.forEach((pd) => {
@@ -110,7 +109,7 @@ function App() {
 
       dispatch(setCurrentFloor(data_floor.some((f) => f.index == 0) ? data_floor.find((f) => f.index == 0)! : data_floor[0]!));
     } catch (error) {
-      dispatch(showAlertError({ message: 'Veriler getirilirken hata oluştu.' }));
+      dispatch(showAlertError({ message: 'Bilgiler alınırken bir hata oluştu.' }));
     }
   }
 
@@ -123,8 +122,12 @@ function App() {
           <Map /> 
           <LayerSelection />
           <Compass />
-          <FindMyLocation />
-          <Floors />
+          <div className='absolute bottom-10 2xl:right-88 right-5'>
+            <div className='flex gap-3'>
+              <FindMyLocation />
+              <Floors />
+            </div>
+          </div>
           <NavigationController />
         </div> 
       </div>

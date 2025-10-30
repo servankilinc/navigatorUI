@@ -93,7 +93,7 @@ function Floors() {
   if (!map || !floorList  ) return <></>;
 
   return (
-    <Card className="absolute bottom-10 2xl:right-105 right-20 m-0 p-1">
+    <Card className="m-0 p-1">
       <CardContent className="p-0 m-0">
         <Item className={'py-2 mb-2 bg-white rounded-none border-0 border-neutral-200'}>
           <ItemContent>
