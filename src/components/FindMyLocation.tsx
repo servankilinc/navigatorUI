@@ -12,7 +12,7 @@ function FindMyLocation() {
   const isWatcherEnable = useAppSelector((state) => state.appReducer.isWatcherEnable);
 
   function FindMe(): void {
-    if (!map || isWatcherEnable != true || currentLocation == undefined) return;
+    if (!map || isWatcherEnable != true || !currentLocation) return;
 
     map.flyTo({
       center: { lng: currentLocation[0], lat: currentLocation[1] }!,
@@ -24,7 +24,7 @@ function FindMyLocation() {
     ShowCurrentPoint(currentLocation!, map!);
   }
 
-  if (!map || isWatcherEnable != true) return <></>;
+  if (!map || isWatcherEnable != true || !currentLocation) return <></>;
 
   return (
     <Card className="m-0 p-1">

@@ -10,11 +10,11 @@ export function StartWatch(onChange: PositionCallback, onError: ErrorCallback): 
   const watchId: number = navigator.geolocation.watchPosition(
     (pos) => onChange(pos),
     (err) => onError(err),
-    {
-      enableHighAccuracy: true,
-      maximumAge: 1000, // ms, daha eski konumu kabul etme süresi
-      timeout: 10000, // ms, pozisyon alınmazsa hata döndür
-    }
+  {
+    enableHighAccuracy: true,
+    timeout: 30000,       // biraz daha yüksek zaman ver
+    maximumAge: 0          // eski konumu kullanma
+  }
   );
   return watchId;
 }

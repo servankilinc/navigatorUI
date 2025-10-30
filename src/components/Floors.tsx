@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { BetweenHorizontalEnd } from 'lucide-react';
 import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
+import { ShowGLTFModel } from '@/services/threeDModelService';
 
 function Floors() {
   const map = useAppSelector((state) => state.mapReducer.map);
@@ -23,6 +24,7 @@ function Floors() {
   const advancedPointList = useAppSelector((state) => state.storageReducer.advancedPoints);
   const routeList = useAppSelector((state) => state.storageReducer.routeList);
   const solid = useAppSelector((state) => state.storageReducer.solid);
+  const threeDModelList = useAppSelector((state) => state.storageReducer.threeDModels);
 
   const dispath = useAppDispatch();
 
@@ -36,6 +38,8 @@ function Floors() {
     pathList.filter((f) => f.properties.floor == floorIndex).map((path) => ShowPath(path, map!));
     routeList.filter((f) => f.floor == floorIndex).map((route) => ShowRoute(route.path, map));
 
+    threeDModelList.map(d => ShowGLTFModel(d, map!));
+
     if (currentLayerType === LayerTypesEnum.UcBoyut) {
       const featuresToShow = solid.features.filter((f) => f.properties.floor == floorIndex);
       const solidToShow: Solid = {
@@ -43,7 +47,7 @@ function Floors() {
         features: featuresToShow,
       };
       ShowSolid(solidToShow, map);
-    } 
+    }
     else {
       polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowPolygon(polygon, map));
     }

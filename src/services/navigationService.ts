@@ -10,6 +10,7 @@ import * as turf from '@turf/turf'
 const imageUrlCurrent = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_current.png`;
 const imageUrlStart = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_start.png`;
 const imageUrlTarget = `${import.meta.env.VITE_API_URL}/api/polygon/uploads/point_target.png`;
+let currentPointImageAdded = false;
 
 export function ShowRoute(path: Position[], map: maplibregl.Map): void {
   ClearRoutes(map);
@@ -112,6 +113,7 @@ function CalculateRemaindPath(route: Route, currentPosition: Position): Position
 }
 
 export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) {
+  HideCurrentPoint(map);
   const sourceId = `_point_current_`;
   const sourceImageId = `_point_current_img_`;
 
@@ -121,9 +123,10 @@ export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) 
     properties: {},
   };
 
-  if (!map.hasImage(sourceImageId)) {
+  if (!currentPointImageAdded && !map.hasImage(sourceImageId)) {
     const image = await map.loadImage(imageUrlCurrent); 
     map.addImage(sourceImageId, image.data);
+    currentPointImageAdded = true;
   }
 
   if (map.getSource(sourceId)) {
@@ -154,12 +157,7 @@ export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) 
 }
 export function HideCurrentPoint(map: maplibregl.Map): void {
   const sourceId = `_point_current_`;
-  const sourceImageId = `_point_current_img_`;
   
-  if (map.hasImage(sourceImageId)) {
-    map.removeImage(sourceImageId);
-  }
-
   if (map.getLayer(sourceId)) {
     map.removeLayer(sourceId);
   }

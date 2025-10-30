@@ -10,12 +10,12 @@ import Floor from './models/Floor';
 import Graph from './models/Graph';
 import LineStringGeoJson from './models/Features/LineStringGeoJson';
 import PolygonGeoJson from './models/Features/PolygonGeoJson';
-import { setAdvancedPointList, setEntrancePointList, setFloorList, setGraphList, setPathList, setPolygonList, setSolidFeatures } from './redux/reducers/storageSlice';
+import { setAdvancedPointList, setEntrancePointList, setFloorList, setGraphList, setPathList, setPolygonList, setSolidFeatures, setThreeDModels } from './redux/reducers/storageSlice';
 import { showAlertError } from './redux/reducers/alertSlice';
 import { setCurrentFloor, setCurrentLocation, setIsWatcherEnable } from './redux/reducers/appSlice';
 import Solid from './models/Solid';
 import GraphBaseModel from './models/GraphBaseModel';
-import { StartWatch } from './services/locationService';
+import { StartWatch, StopWatch } from './services/locationService';
 import { store } from './redux/store';
 import Route from './models/Route';
 import { ShowCurrentPoint, ShowNextRoute } from './services/navigationService';
@@ -26,40 +26,42 @@ import { Button } from './components/ui/button';
 import LayerSelection from './components/LayerSelection';
 import Compass from './components/Compass';
 import FindMyLocation from './components/FindMyLocation';
+import ThreeDModel from './models/ThreeDModel';
 
 function App() {
   const dispatch = useAppDispatch();
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
   const map = useAppSelector((state) => state.mapReducer.map);
-  const isWatcherEnbale = useAppSelector((state) => state.appReducer.isWatcherEnable);
+  const isWatcherEnable = useAppSelector((state) => state.appReducer.isWatcherEnable);
 
 
-  useEffect(() => {
-    console.info(import.meta.env)
-    StartWatch(HandlePositionChange, HandleWatchError);
-    HandlePositionChange(undefined);
+  useEffect(() => { 
     FetchData();
-  }, []);
+    
+    // const watchId = StartWatch(HandlePositionChange, HandleWatchError);
+    // return () => {
+    //   if (watchId) StopWatch(watchId);
+    // };
+  }, [map]);
 
-  function HandlePositionChange(position: GeolocationPosition | undefined): void {
-    if (isWatcherEnbale != true) dispatch(setIsWatcherEnable(true));
+  function HandlePositionChange(position: GeolocationPosition): void {
+    if (!map || !currentFloor || !position) return;
+    if (isWatcherEnable != true) dispatch(setIsWatcherEnable(true));
+    
+    const currentPosition: Position = [position.coords.longitude, position.coords.latitude];
+    ShowCurrentPoint(currentPosition, map);
+    dispatch(setCurrentLocation(currentPosition));
 
-    if (!map || !currentFloor) return;
     const routeList: Route[] = store.getState().storageReducer.routeList;
     const route = routeList.find((f) => f.floor === currentFloor.index);
     if (!route) return;
 
-    const currentPosition: Position = position != undefined ? [position.coords.longitude, position.coords.latitude] : [32.4837723400532, 37.8755113836849];
-
-    ShowCurrentPoint(currentPosition, map);
     ShowNextRoute(route, currentPosition, map);
-
-    dispatch(setCurrentLocation(currentPosition));
   }
 
   function HandleWatchError(err: string | GeolocationPositionError): void {
-    if (isWatcherEnbale != false) dispatch(setIsWatcherEnable(false));
+    if (isWatcherEnable != false) dispatch(setIsWatcherEnable(false));
   }
 
   async function FetchData() {
@@ -71,6 +73,7 @@ function App() {
       const res_path = await fetch(`${import.meta.env.VITE_API_URL}/api/path`);
       const res_polygon = await fetch(`${import.meta.env.VITE_API_URL}/api/polygon`);
       const res_solid = await fetch(`${import.meta.env.VITE_API_URL}/api/solid`);
+      const res_threeDModels = await fetch(`${import.meta.env.VITE_API_URL}/api/threeDModel`);
 
       const data_advancedPoint: AdvancedPointGeoJson[] = await res_advancedPoint.json();
       const data_entrancePoint: EntrancePointGeoJson[] = await res_entrancePoint.json();
@@ -79,10 +82,15 @@ function App() {
       const data_path: LineStringGeoJson[] = await res_path.json();
       const data_polygon: PolygonGeoJson[] = await res_polygon.json();
       const data_solid: Solid[] = await res_solid.json();
+      const data_threeDModels: ThreeDModel[] = await res_threeDModels.json();
 
       dispatch(setAdvancedPointList(data_advancedPoint));
       dispatch(setEntrancePointList(data_entrancePoint));
       dispatch(setFloorList(data_floor));
+      dispatch(setPathList(data_path));
+      dispatch(setPolygonList(data_polygon));
+      dispatch(setSolidFeatures(data_solid[0].features));
+      dispatch(setThreeDModels(data_threeDModels));
       
       // GRAPHMODEL to GRAPH CONVERT
       if (data_graph && data_graph.length > 0) {
@@ -91,7 +99,7 @@ function App() {
           let _graph = new Graph(pd.floor);
           _graph.nodes = pd.nodes;
           _graph.edges = pd.edges;
-
+          
           pd.edges.forEach((edge) => {
             _graph.graphGraphLib.setNode(edge.source);
             _graph.graphGraphLib.setNode(edge.target);
@@ -101,11 +109,6 @@ function App() {
         });
         dispatch(setGraphList(_graphList));
       }
-      dispatch(setPathList(data_path));
-      dispatch(setPolygonList(data_polygon));
-      dispatch(setSolidFeatures(data_solid[0].features));
-
-      // dispatch(showAlertSuccess({ message: "Veriler başarıyal getirildi." }));
 
       dispatch(setCurrentFloor(data_floor.some((f) => f.index == 0) ? data_floor.find((f) => f.index == 0)! : data_floor[0]!));
     } catch (error) {
@@ -117,13 +120,13 @@ function App() {
 
   return (
     <>
-      <div className="w-screen h-screen p-4">
-        <div className={'relative flex 2xl:flex-row gap-4 content-center w-full h-full'}>
+      <div className="w-screen h-[94vh] p-4">
+        <div className={'relative flex gap-4 content-center w-full h-full'}>
           <Map /> 
           <LayerSelection />
           <Compass />
           <div className='absolute bottom-10 2xl:right-88 right-5'>
-            <div className='flex gap-3'>
+            <div className='flex items-end gap-3'>
               <FindMyLocation />
               <Floors />
             </div>
@@ -138,7 +141,6 @@ function App() {
         import.meta.env.MODE == 'development' && 
         <div className="col-span-2">
           <div className="flex-col gap-4">
-            <Button variant="outline" onClick={() => HandlePositionChange(undefined)}>Where am I</Button>
             <Button variant="outline" onClick={() => {console.log(map?.getStyle().layers)}}>Layer Yazdır</Button>
           </div>
         </div>

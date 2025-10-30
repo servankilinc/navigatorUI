@@ -5,6 +5,12 @@ import { useAppDispatch } from '../redux/hooks';
 import { setBearing, setMap } from '../redux/reducers/mapSlice';
 import throttle from 'lodash/throttle';
 
+const CENTER_LNG = Number(import.meta.env.VITE_CENTER_LNG);
+const CENTER_LAT = Number(import.meta.env.VITE_CENTER_LAT);
+const ZOOM = Number(import.meta.env.VITE_ZOOM);
+const MIN_ZOOM = Number(import.meta.env.VITE_MIN_ZOOM);
+const MAX_ZOOM = Number(import.meta.env.VITE_MAX_ZOOM);
+
 export default function Map(): React.JSX.Element {
   const dispatch = useAppDispatch();
 
@@ -36,22 +42,24 @@ export default function Map(): React.JSX.Element {
           },
         ],
       },
-      center: [import.meta.env.VITE_CENTER_LNG, import.meta.env.VITE_CENTER_LAT],
-      zoom: import.meta.env.VITE_ZOOM,
-      minZoom: import.meta.env.VITE_MIN_ZOOM,
-      maxZoom: import.meta.env.VITE_MAX_ZOOM,
+      center: [CENTER_LNG, CENTER_LAT],
+      zoom: ZOOM,
+      minZoom: MIN_ZOOM,
+      maxZoom: MAX_ZOOM,
       pitch: 40,
       bearing: 122,
-      // maxBounds: [
-      //   [32.55, 37.94], // southwest [lng, lat]
-      //   [32.57, 37.95], // northeast [lng, lat]
-      // ],
+      canvasContextAttributes: { antialias: true },
+      maxBounds: [
+        [32.55, 37.94], // southwest [lng, lat]
+        [32.57, 37.95], // northeast [lng, lat]
+      ],
     });
 
     map.on('load', () => {
       dispatch(setMap(map));
     });
-    
+
+    // throttle sürekli state set etmek yerine 100ms de bir set eder
     const updateBearing = throttle(() => {
       dispatch(setBearing(map.getBearing()));
     }, 100);
@@ -59,7 +67,6 @@ export default function Map(): React.JSX.Element {
     dispatch(setBearing(map.getBearing()));
     map.on('rotate', updateBearing);
 
-    
     return () => {
       map.off('rotate', updateBearing);
       map.remove();
@@ -68,3 +75,12 @@ export default function Map(): React.JSX.Element {
 
   return <div id="map" className="size-full rounded-2xl shdaow border-1"></div>;
 }
+
+
+function ShowGLTFModel(arg0: {
+  id: string; origin: number[]; // lat, lng
+  rotateX: number; rotateY: number; rotateZ: number; scaleRate: number; source: string;
+}, arg1: maplibregl.Map) {
+  throw new Error('Function not implemented.');
+}
+
