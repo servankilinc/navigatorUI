@@ -26,7 +26,7 @@ import { Button } from './components/ui/button';
 import LayerSelection from './components/LayerSelection';
 import Compass from './components/Compass';
 import FindMyLocation from './components/FindMyLocation';
-import ThreeDModel from './models/ThreeDModel';
+import ThreeDModelPointGeoJson from './models/Features/ThreeDModelPointGeoJson';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -82,7 +82,7 @@ function App() {
       const data_path: LineStringGeoJson[] = await res_path.json();
       const data_polygon: PolygonGeoJson[] = await res_polygon.json();
       const data_solid: Solid[] = await res_solid.json();
-      const data_threeDModels: ThreeDModel[] = await res_threeDModels.json();
+      const data_threeDModels: ThreeDModelPointGeoJson[] = await res_threeDModels.json();
 
       dispatch(setAdvancedPointList(data_advancedPoint));
       dispatch(setEntrancePointList(data_entrancePoint));

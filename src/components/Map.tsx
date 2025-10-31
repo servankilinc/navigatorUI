@@ -75,12 +75,3 @@ export default function Map(): React.JSX.Element {
 
   return <div id="map" className="size-full rounded-2xl shdaow border-1"></div>;
 }
-
-
-function ShowGLTFModel(arg0: {
-  id: string; origin: number[]; // lat, lng
-  rotateX: number; rotateY: number; rotateZ: number; scaleRate: number; source: string;
-}, arg1: maplibregl.Map) {
-  throw new Error('Function not implemented.');
-}
-

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { BetweenHorizontalEnd } from 'lucide-react';
 import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
-import { ShowGLTFModel } from '@/services/threeDModelService';
+import { Show3DModel } from '@/services/threeDModelService';
 
 function Floors() {
   const map = useAppSelector((state) => state.mapReducer.map);
@@ -37,8 +37,7 @@ function Floors() {
     advancedPointList.filter((f) => f.properties.floor == floorIndex).map((advancedPoint) => ShowAdvancedPoint(advancedPoint, map));
     pathList.filter((f) => f.properties.floor == floorIndex).map((path) => ShowPath(path, map!));
     routeList.filter((f) => f.floor == floorIndex).map((route) => ShowRoute(route.path, map));
-
-    threeDModelList.map(d => ShowGLTFModel(d, map!));
+    threeDModelList.filter((f) => f.properties.floor == floorIndex).map((d) => Show3DModel(d, map));
 
     if (currentLayerType === LayerTypesEnum.UcBoyut) {
       const featuresToShow = solid.features.filter((f) => f.properties.floor == floorIndex);
@@ -47,13 +46,11 @@ function Floors() {
         features: featuresToShow,
       };
       ShowSolid(solidToShow, map);
-    }
-    else {
+    } else {
       polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowPolygon(polygon, map));
     }
 
     polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLogo(polygon, map));
-
   }, [currentFloor, map]);
 
   function SwipeFloor(floorIndex: number): void {
@@ -94,7 +91,7 @@ function Floors() {
     });
   }
 
-  if (!map || !floorList  ) return <></>;
+  if (!map || !floorList) return <></>;
 
   return (
     <Card className="m-0 p-1">

@@ -7,7 +7,7 @@ import EntrancePointGeoJson from '../../models/Features/EntrancePointGeoJson';
 import AdvancedPointGeoJson from '../../models/Features/AdvancedPointGeoJson';
 import Route from '../../models/Route';
 import Solid, { solidFeature } from '../../models/Solid';
-import ThreeDModel from '@/models/ThreeDModel';
+import ThreeDModelPointGeoJson from '@/models/Features/ThreeDModelPointGeoJson';
 
 interface StateUI {
   floorList: Floor[];
@@ -18,7 +18,7 @@ interface StateUI {
   entrancePoints: EntrancePointGeoJson[];
   advancedPoints: AdvancedPointGeoJson[];
   solid: Solid;
-  threeDModels: ThreeDModel[];
+  threeDModels: ThreeDModelPointGeoJson[];
 }
 
 const initialState: StateUI = {
@@ -68,7 +68,7 @@ export const storageSlice = createSlice({
     setRoutes: (state, action: PayloadAction<Route[]>) => {
       state.routeList = [...action.payload];
     },
-    setThreeDModels: (state, action: PayloadAction<ThreeDModel[]>) => {
+    setThreeDModels: (state, action: PayloadAction<ThreeDModelPointGeoJson[]>) => {
       state.threeDModels = [...action.payload];
     },
     clearRoutes: (state) => {
