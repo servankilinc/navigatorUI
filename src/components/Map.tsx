@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import maplibregl from 'maplibre-gl';
+import maplibregl, { Marker } from 'maplibre-gl';
 import { useAppDispatch } from '../redux/hooks';
 import { setBearing, setMap } from '../redux/reducers/mapSlice';
 import throttle from 'lodash/throttle';
@@ -44,8 +44,8 @@ export default function Map(): React.JSX.Element {
       },
       center: [CENTER_LNG, CENTER_LAT],
       zoom: ZOOM,
-      minZoom: MIN_ZOOM,
-      maxZoom: MAX_ZOOM,
+      // minZoom: MIN_ZOOM,
+      // maxZoom: MAX_ZOOM,
       pitch: 40,
       bearing: 122,
       canvasContextAttributes: { antialias: true },
@@ -63,6 +63,10 @@ export default function Map(): React.JSX.Element {
     const updateBearing = throttle(() => {
       dispatch(setBearing(map.getBearing()));
     }, 100);
+ 
+    if (import.meta.env.VITE_CURRENT_LNG != undefined ||  import.meta.env.VITE_CURRENT_LAT!= undefined){
+      new Marker({ color: "#ff0000" }).setLngLat([import.meta.env.VITE_CURRENT_LNG, import.meta.env.VITE_CURRENT_LAT]).addTo(map);
+    }
 
     dispatch(setBearing(map.getBearing()));
     map.on('rotate', updateBearing);

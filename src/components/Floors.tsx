@@ -31,7 +31,6 @@ function Floors() {
   useEffect(() => {
     if (!map) return;
     if (!currentFloor) return;
-
     const floorIndex = currentFloor?.index;
 
     advancedPointList.filter((f) => f.properties.floor == floorIndex).map((advancedPoint) => ShowAdvancedPoint(advancedPoint, map));
@@ -51,6 +50,7 @@ function Floors() {
     }
 
     polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLogo(polygon, map));
+
   }, [currentFloor, map]);
 
   function SwipeFloor(floorIndex: number): void {

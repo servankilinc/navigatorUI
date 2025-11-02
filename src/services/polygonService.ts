@@ -3,6 +3,8 @@ import Solid from '../models/Solid';
 import maplibregl from 'maplibre-gl';
 
 export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void {
+  if(polygon.properties.showable == false) return;
+  
   const sourceId = `_polygon_${polygon.properties.id}`;
 
   if (map.getSource(sourceId)) {
@@ -15,6 +17,9 @@ export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void 
     data: polygon,
   });
 
+  // polygon ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = getFirstModelLayer(map) ?? getFirstLogoLayer(map);
+
   map.addLayer({
     id: sourceId,
     type: 'fill',
@@ -22,7 +27,7 @@ export function ShowPolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void 
     paint: {
       'fill-color': '#c7d0d8ff', 
     },
-  });
+  }, beforeLayer ?? undefined);
 }
 
 export function ShowSolid(solid: Solid, map: maplibregl.Map): void {
@@ -38,7 +43,9 @@ export function ShowSolid(solid: Solid, map: maplibregl.Map): void {
     data: solid as any,
   });
 
-  const beforeLayerId = getBeforeLayerIdOfSolid(map);
+  // solid ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = getFirstModelLayer(map) ?? getFirstLogoLayer(map);
+
   map.addLayer(
     {
       id: sourceId,
@@ -50,14 +57,8 @@ export function ShowSolid(solid: Solid, map: maplibregl.Map): void {
         'fill-extrusion-base': ['get', 'base_height'],
         'fill-extrusion-opacity': 1,
       },
-    }, beforeLayerId ?? undefined
+    }, beforeLayer ?? undefined
   );
-}
-
-function getBeforeLayerIdOfSolid(map: maplibregl.Map) {
-  const layers = map.getStyle().layers;
-  const logoLayers = layers?.filter((l) => l.id.startsWith('_logo'));
-  return logoLayers?.length ? logoLayers[0].id : undefined;
 }
 
 export function HidePolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void {
@@ -71,7 +72,6 @@ export function HidePolygon(polygon: PolygonGeoJson, map: maplibregl.Map): void 
     map.removeSource(sourceId);
   }
 }
-
 
 export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Promise<void> {
   if (polygon.properties.iconSource == undefined || polygon.properties.iconSource.length <= 0) return;
@@ -131,4 +131,17 @@ function getPolygonCenter(poly: PolygonGeoJson): [number, number] {
   });
 
   return [x / ring.length, y / ring.length];
+}
+
+
+function getFirstModelLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_model_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}
+
+function getFirstLogoLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_logo'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
 }

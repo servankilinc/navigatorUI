@@ -9,9 +9,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 export class selectItem {
   label: string;
   value: string;
-  constructor(label: string, value: string) {
+  searchParam: string;
+  constructor(label: string, value: string, searchParam: string) {
     this.label = label;
     this.value = value;
+    this.searchParam = searchParam;
   }
 }
 
@@ -19,7 +21,7 @@ type comboboxProps = {
   selectItems: selectItem[];
   placeholder: string | undefined;
   selectedValue: string | undefined;
-  setSelectedValue: React.Dispatch<React.SetStateAction<string | undefined>>;
+  setSelectedValue: (value: string | undefined) => void;
   width?: number | undefined;
 };
 
@@ -42,9 +44,10 @@ export default function Combobox(props: comboboxProps) {
               {props.selectItems.map((item) => (
                 <CommandItem
                   key={item.value}
-                  value={item.value}
+                  value={item.searchParam}
                   onSelect={(currentValue) => {
-                    props.setSelectedValue(currentValue === props.selectedValue ? undefined : currentValue);
+                    let selectedSearchParam = props.selectItems.find(f => f.searchParam == currentValue);
+                    props.setSelectedValue(selectedSearchParam?.value === props.selectedValue ? undefined : selectedSearchParam?.value);
                     setOpen(false);
                   }}
                 >

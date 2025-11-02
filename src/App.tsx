@@ -27,6 +27,7 @@ import LayerSelection from './components/LayerSelection';
 import Compass from './components/Compass';
 import FindMyLocation from './components/FindMyLocation';
 import ThreeDModelPointGeoJson from './models/Features/ThreeDModelPointGeoJson';
+import CurrentRoute from './components/CurrentRoute';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -89,9 +90,10 @@ function App() {
       dispatch(setFloorList(data_floor));
       dispatch(setPathList(data_path));
       dispatch(setPolygonList(data_polygon));
-      dispatch(setSolidFeatures(data_solid[0].features));
-      dispatch(setThreeDModels(data_threeDModels));
       
+      if(!data_solid || data_solid.length > 0) dispatch(setSolidFeatures(data_solid[0].features));
+      
+      dispatch(setThreeDModels(data_threeDModels));
       // GRAPHMODEL to GRAPH CONVERT
       if (data_graph && data_graph.length > 0) {
         const _graphList: Graph[] = [];
@@ -109,6 +111,7 @@ function App() {
         });
         dispatch(setGraphList(_graphList));
       }
+      
 
       dispatch(setCurrentFloor(data_floor.some((f) => f.index == 0) ? data_floor.find((f) => f.index == 0)! : data_floor[0]!));
     } catch (error) {
@@ -123,6 +126,7 @@ function App() {
       <div className="w-screen h-[94vh] p-4">
         <div className={'relative flex gap-4 content-center w-full h-full'}>
           <Map /> 
+          <CurrentRoute />
           <LayerSelection />
           <Compass />
           <div className='absolute bottom-10 2xl:right-88 right-5'>

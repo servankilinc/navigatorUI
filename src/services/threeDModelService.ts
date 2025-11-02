@@ -4,31 +4,27 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
- 
-type supportdedTypes = 'gltf' | 'ply' | 'stl';
+
+type supportdedTypes = 'gltf' | 'glb' | 'ply' | 'stl';
 
 export function Show3DModel(model: ThreeDModelPointGeoJson, map: maplibregl.Map) {
-  if(model.properties.source == null || model.properties.source.length < 2) return;
-  if(model.properties.source.toLowerCase().trim().endsWith("ply")){
+  if (model.properties.source == null || model.properties.source.length < 2) return;
+  if (model.properties.source.toLowerCase().trim().endsWith('ply')) {
     Show3DModelBase(model, map, 'ply');
-  }
-  else if (model.properties.source.toLowerCase().trim().endsWith("gltf")){
+  } else if (model.properties.source.toLowerCase().trim().endsWith('gltf') || model.properties.source.toLowerCase().trim().endsWith('glb')) {
     Show3DModelBase(model, map, 'gltf');
-  }
-  else if (model.properties.source.toLowerCase().trim().endsWith("stl")){
+  } else if (model.properties.source.toLowerCase().trim().endsWith('stl')) {
     Show3DModelBase(model, map, 'stl');
   }
 }
- 
 
-function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, type: supportdedTypes) { 
+function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, type: supportdedTypes) {
+  const  layerId = `_model_${model.properties.id}`;
+
   const modelAltitude = 0;
   const modelRotate = [Math.PI / 2, model.properties.rotateY, model.properties.rotateZ];
 
-  const modelAsMercatorCoordinate = maplibregl.MercatorCoordinate.fromLngLat(
-    { lng: model.geometry.coordinates[0], lat: model.geometry.coordinates[1] },
-    modelAltitude
-  );
+  const modelAsMercatorCoordinate = maplibregl.MercatorCoordinate.fromLngLat({ lng: model.geometry.coordinates[0], lat: model.geometry.coordinates[1] }, modelAltitude);
 
   const modelTransform = {
     translateX: modelAsMercatorCoordinate.x,
@@ -40,10 +36,10 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
     scale: modelAsMercatorCoordinate.meterInMercatorCoordinateUnits() * model.properties.scaleRate,
   };
 
-  if (map.getLayer(model.properties.id)) return;
+  if (map.getLayer(layerId)) return;
 
   const customLayer: CustomLayerInterface = {
-    id: model.properties.id,
+    id: layerId,
     type: 'custom',
     renderingMode: '3d',
     onAdd(map, gl) {
@@ -51,13 +47,17 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
       const scene = new THREE.Scene();
 
       // Işıklar
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-      directionalLight.position.set(0, -70, 100).normalize();
-      scene.add(directionalLight);
+      // GÜN IŞIĞI ETKİSİ
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
 
-      const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
-      directionalLight2.position.set(0, 70, 100).normalize();
-      scene.add(directionalLight2);
+      const sunLight = new THREE.DirectionalLight(0xffffff, 2.0);
+      sunLight.position.set(100, 200, 400);
+      scene.add(sunLight);
+
+      const hemiLight = new THREE.HemisphereLight(0xeeeeff, 0x777788, 0.5);
+      hemiLight.position.set(0, 100, 0);
+      scene.add(hemiLight);
 
       // ---- MODEL YÜKLEYİCİ ----
       const modelUrl = `${import.meta.env.VITE_API_URL}/api/threeDModel${model.properties.source}`;
@@ -65,8 +65,7 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
       if (type === 'gltf') {
         const loader = new GLTFLoader();
         loader.load(modelUrl, (gltf) => scene.add(gltf.scene));
-      } 
-      else if (type === 'ply') {
+      } else if (type === 'ply') {
         const loader = new PLYLoader();
         loader.load(modelUrl, (geometry) => {
           geometry.computeVertexNormals();
@@ -74,8 +73,7 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
           const mesh = new THREE.Mesh(geometry, material);
           scene.add(mesh);
         });
-      } 
-      else if (type === 'stl') {
+      } else if (type === 'stl') {
         const loader = new STLLoader();
         loader.load(modelUrl, (geometry) => {
           geometry.computeVertexNormals();
@@ -124,5 +122,15 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
     },
   };
 
-  map.addLayer(customLayer);
+  // solid ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = getFirstLogoLayer(map);
+
+  map.addLayer(customLayer, beforeLayer ?? undefined);
+}
+
+
+function getFirstLogoLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_logo'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
 }

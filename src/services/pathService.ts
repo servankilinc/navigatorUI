@@ -15,8 +15,8 @@ export function ShowPath(path: LineStringGeoJson, map: maplibregl.Map): void {
   });
 
 
-  // yollar varsa _c_route_layer den önce yoksa _c_SolidOfFloor den önce eklensin
-  const beforeLayer = map.getLayer('_c_route_layer') ?? map.getLayer('_c_SolidOfFloor');
+  // yollar varsa _c_route_layer den önce yoksa points den önce yoksa solid veya polygon'dan önce eklensin
+  const beforeLayer = map.getLayer('_c_route_layer')?.id ?? getFirstPointLayer(map) ?? map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map);
   map.addLayer(
     {
       id: sourceId,
@@ -32,7 +32,7 @@ export function ShowPath(path: LineStringGeoJson, map: maplibregl.Map): void {
         'line-opacity': 1,
       },
     },
-    beforeLayer ? '_c_SolidOfFloor' : undefined
+    beforeLayer ?? undefined
   );
 }
 
@@ -46,4 +46,17 @@ export function HidePath(path: LineStringGeoJson, map: maplibregl.Map): void {
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId);
   }
+}
+
+function getFirstPointLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_point_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}
+
+
+function getFirstPolygonLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_polygon_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
 }

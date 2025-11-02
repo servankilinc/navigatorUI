@@ -29,8 +29,8 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void {
     } 
   });
   
-  // rota _c_SolidOfFloor den önce eklensin
-  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  // rota pointsden önce yoksa _c_SolidOfFloor veya ilk polygondan dan önce yoksa ilk modeden eklensin
+  const beforeLayer = getFirstPointLayer(map) ?? map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map) ?? getFirstModelLayer(map);
 
   // burası konum servisinden gelecek 
   let isLocationAvailable = store.getState().appReducer.isWatcherEnable;
@@ -44,7 +44,7 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void {
       'line-color':  '#009CDF',
         'line-width': 8
       },
-    }, beforeLayer ? beforeLayer.id : undefined);
+    }, beforeLayer ?? undefined);
   }
   else{ 
     map.addLayer({
@@ -57,9 +57,10 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void {
         'line-width': 8,
         'line-dasharray': [2, 2],
       },
-    }, beforeLayer ? beforeLayer.id : undefined);  
+    }, beforeLayer ?? undefined);  
   }
 }
+
 
 export function ShowNextRoute(route: Route, currentPosition: Position, map: maplibregl.Map): void {
    
@@ -137,7 +138,9 @@ export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) 
 
   map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
 
-  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  // rota  _c_SolidOfFloor veya ilk polygondan dan önce yoksa ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map) ?? getFirstModelLayer(map) ?? getFirstLogoLayer(map);
+  
   map.addLayer(
     {
       id: sourceId,
@@ -145,14 +148,14 @@ export async function ShowCurrentPoint(position: Position, map: maplibregl.Map) 
       source: sourceId,
       layout: {
         'icon-image': sourceImageId,
-        'icon-size': 0.05,
+        'icon-size': 0.04,
         'icon-anchor': 'center', // alt kısmı koordinata yapışık
         'icon-allow-overlap': true,
         'icon-rotate': 30, // sabit yön
         'icon-rotation-alignment': 'map',
       },
     },
-    beforeLayer ? beforeLayer.id : undefined
+    beforeLayer ?? undefined
   );
 }
 export function HideCurrentPoint(map: maplibregl.Map): void {
@@ -189,7 +192,9 @@ export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
 
   map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
 
-  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  // rota  _c_SolidOfFloor veya ilk polygondan dan önce yoksa ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map) ?? getFirstModelLayer(map) ?? getFirstLogoLayer(map);
+
   map.addLayer(
     {
       id: sourceId,
@@ -197,14 +202,14 @@ export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
       source: sourceId,
       layout: {
         'icon-image': sourceImageId,
-        'icon-size': 0.04,
+        'icon-size': 0.03,
         'icon-anchor': 'center', // alt kısmı koordinata yapışık
         'icon-allow-overlap': true,
         'icon-rotate': 30, // sabit yön
         'icon-rotation-alignment': 'map',
       },
     },
-    beforeLayer ? beforeLayer.id : undefined
+    beforeLayer ?? undefined
   );
 }
 export function HideStartPoint(map: maplibregl.Map): void {
@@ -246,7 +251,9 @@ export async function ShowTargetPoint(position: Position, map: maplibregl.Map) {
 
   map.addSource(sourceId, { type: 'geojson', data: pointGeoJson });
 
-  const beforeLayer = map.getLayer('_c_SolidOfFloor');
+  // rota  _c_SolidOfFloor veya ilk polygondan dan önce yoksa ilk modeden yoksa ilk logodan önce eklensin
+  const beforeLayer = map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map) ?? getFirstModelLayer(map) ?? getFirstLogoLayer(map);
+
   map.addLayer(
     {
       id: sourceId,
@@ -254,14 +261,14 @@ export async function ShowTargetPoint(position: Position, map: maplibregl.Map) {
       source: sourceId,
       layout: {
         'icon-image': sourceImageId,
-        'icon-size': 0.04,
+        'icon-size': 0.03,
         'icon-anchor': 'center', // alt kısmı koordinata yapışık
         'icon-allow-overlap': true,
         'icon-rotate': 30, // sabit yön
         'icon-rotation-alignment': 'map',
       },
     },
-    beforeLayer ? beforeLayer.id : undefined
+    beforeLayer ?? undefined
   );
 }
 export function HideTargetPoint(map: maplibregl.Map): void {
@@ -361,3 +368,30 @@ export function GenerateRoutes(startPolyId: string, targetPolyId: string) {
   return tempRouteList;
 }
 
+
+
+
+function getFirstPointLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_point_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}
+
+
+function getFirstPolygonLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_polygon_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}
+
+function getFirstModelLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_model_'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}
+
+function getFirstLogoLayer(map: maplibregl.Map) {
+  const layers = map.getStyle().layers;
+  const logoLayers = layers?.filter((l) => l.id.startsWith('_logo'));
+  return logoLayers?.length ? logoLayers[0].id : undefined;
+}

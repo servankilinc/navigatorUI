@@ -8,6 +8,7 @@ import { ShowEntrancePoint } from '../services/entrancePointService';
 import Combobox, { selectItem } from '@/components/ui/combobox';
 import { Button } from '@/components/ui/button';
 import { IoNavigateCircle, IoTrash } from 'react-icons/io5';
+import { setStartLocation, setTargetLocation } from '@/redux/reducers/appSlice';
 
 function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
   const dispatch = useAppDispatch();
@@ -16,20 +17,29 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
   const entrancePointList = useAppSelector((state) => state.storageReducer.entrancePoints);
   const polygonList = useAppSelector((state) => state.storageReducer.polygons);
+  
+  const startLocaltion = useAppSelector((state) => state.appReducer.startLocaltion);
+  const targetLocaltion = useAppSelector((state) => state.appReducer.targetLocaltion);
 
-  const [startPolyId, setStartPolyId] = useState<string>();
-  const [targetPolyId, setTargetPolyId] = useState<string>();
+
+  function HandleSelectStartLocation(value: string | undefined): void{
+    dispatch(setStartLocation(value));
+  }
+  
+  function HandleSelectTargetLocation(value: string| undefined): void{
+    dispatch(setTargetLocation(value));
+  }
 
   function HandleNavigation(): void {
     try {
       if (!map) return;
 
-      if (startPolyId == null || targetPolyId == null) throw new Error('Lütfen konum seçiniz!');
+      if (startLocaltion == null || targetLocaltion == null) throw new Error('Lütfen konum seçiniz!');
 
-      const tempRouteList: Route[] = GenerateRoutes(startPolyId, targetPolyId);
+      const tempRouteList: Route[] = GenerateRoutes(startLocaltion, targetLocaltion);
 
-      const startPoint = entrancePointList.find((f) => f.properties.polygonId == startPolyId);
-      const targetPoint = entrancePointList.find((f) => f.properties.polygonId == targetPolyId);
+      const startPoint = entrancePointList.find((f) => f.properties.polygonId == startLocaltion);
+      const targetPoint = entrancePointList.find((f) => f.properties.polygonId == targetLocaltion);
 
       const currentResult = tempRouteList.find((f) => f.floor == currentFloor?.index);
       if (currentResult != null) {
@@ -49,6 +59,8 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
 
   function HandleClear(): void {
     try {
+      dispatch(setStartLocation(undefined));
+      dispatch(setTargetLocation(undefined));
       ClearRoutes(map!);
     } catch (error) {
       dispatch(showAlertError({ message: (error as Error).message }));
@@ -64,9 +76,9 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
         <div className="grid gap-2">
           <p className="text-start text-xs font-light ps-2">Başlangıç Konum</p>
           <Combobox
-            selectedValue={startPolyId}
-            setSelectedValue={setStartPolyId}
-            selectItems={polygonList.filter((f) => f.properties.name != null).map((x) => new selectItem(x.properties.name!, x.properties.id))}
+            selectedValue={startLocaltion}
+            setSelectedValue={HandleSelectStartLocation}
+            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a ,b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name!, x.properties.id, x.properties.name!))}
             placeholder="Seçiniz"
             width={props.isSheetComponent ? 360 : undefined}
           />
@@ -74,9 +86,9 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
         <div className="grid gap-2">
           <p className="text-start text-xs font-light ps-2">Hedef Konum</p>
           <Combobox
-            selectedValue={targetPolyId}
-            setSelectedValue={setTargetPolyId}
-            selectItems={polygonList.filter((f) => f.properties.name != null).map((x) => new selectItem(x.properties.name!, x.properties.id))}
+            selectedValue={targetLocaltion}
+            setSelectedValue={HandleSelectTargetLocation}
+            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a, b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name!, x.properties.id, x.properties.name!))}
             placeholder="Seçiniz"
             width={props.isSheetComponent ? 360 : undefined}
           />

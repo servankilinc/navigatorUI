@@ -30,10 +30,10 @@ export const appSlice = createSlice({
     setCurrentFloor: (state, action: PayloadAction<Floor>) => {
       state.currentFloor = action.payload;
     },
-    setStartLocation: (state, action: PayloadAction<string>) => {
+    setStartLocation: (state, action: PayloadAction<string | undefined>) => {
       state.startLocaltion = action.payload;
     },
-    setTargetLocation: (state, action: PayloadAction<string>) => {
+    setTargetLocation: (state, action: PayloadAction<string | undefined>) => {
       state.targetLocaltion = action.payload;
     },
     setLayerType: (state, action: PayloadAction<LayerTypesEnum>) => {
