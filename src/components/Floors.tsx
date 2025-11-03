@@ -91,7 +91,7 @@ function Floors() {
     });
   }
 
-  if (!map || !floorList) return <></>;
+  if (!map || !floorList || floorList.length <=1) return <></>;
 
   return (
     <Card className="m-0 p-1">

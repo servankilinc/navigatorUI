@@ -110,8 +110,8 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
     source: sourceId,
     layout: {
       'icon-image': sourceId,
-      'icon-size': 0.06,
-      'icon-anchor': 'bottom',
+      'icon-size': 0.04,
+      'icon-anchor': 'top',
     },
   });
 }

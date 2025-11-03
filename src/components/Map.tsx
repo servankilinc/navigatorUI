@@ -44,14 +44,14 @@ export default function Map(): React.JSX.Element {
       },
       center: [CENTER_LNG, CENTER_LAT],
       zoom: ZOOM,
-      // minZoom: MIN_ZOOM,
-      // maxZoom: MAX_ZOOM,
+      minZoom: MIN_ZOOM,
+      maxZoom: MAX_ZOOM,
       pitch: 40,
-      bearing: 122,
+      bearing: 100,
       canvasContextAttributes: { antialias: true },
       maxBounds: [
-        [32.55, 37.94], // southwest [lng, lat]
-        [32.57, 37.95], // northeast [lng, lat]
+        [32.559531, 37.942824], // sol-alt köşe
+        [32.562957, 37.945518], // sağ-üst köşe
       ],
     });
 

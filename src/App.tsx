@@ -28,6 +28,7 @@ import Compass from './components/Compass';
 import FindMyLocation from './components/FindMyLocation';
 import ThreeDModelPointGeoJson from './models/Features/ThreeDModelPointGeoJson';
 import CurrentRoute from './components/CurrentRoute';
+import goraLogo from './assets/gora-logo.png';
 
 function App() {
   const dispatch = useAppDispatch();
@@ -123,17 +124,22 @@ function App() {
 
   return (
     <>
-      <div className="w-screen h-[94vh] p-4">
+      <div className="w-screen h-[100vh] p-4">
         <div className={'relative flex gap-4 content-center w-full h-full'}>
           <Map /> 
           <CurrentRoute />
           <LayerSelection />
           <Compass />
-          <div className='absolute bottom-10 2xl:right-88 right-5'>
+          <div className='absolute bottom-15 2xl:right-[20vw] right-5'>
             <div className='flex items-end gap-3'>
               <FindMyLocation />
               <Floors />
             </div>
+          </div>
+          <div className='absolute bottom-0 bg-white 2xl:right-[20vw] right-5 p-3 rounded-tl-xl rounded-br-xl z-[99]' >
+ 
+              <img src={goraLogo} alt='main-advertising' className='w-24' style={{objectFit:"contain"}} />
+ 
           </div>
           <NavigationController />
         </div> 
@@ -141,14 +147,6 @@ function App() {
 
       <AlertSuccess />
       <AlertError />
-      {
-        import.meta.env.MODE == 'development' && 
-        <div className="col-span-2">
-          <div className="flex-col gap-4">
-            <Button variant="outline" onClick={() => {console.log(map?.getStyle().layers)}}>Layer Yazdır</Button>
-          </div>
-        </div>
-      }
     </>
   );
 }
