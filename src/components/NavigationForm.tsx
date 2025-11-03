@@ -37,6 +37,7 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
       if (!map) return;
 
       if (startLocaltion == null || targetLocaltion == null) throw new Error('Lütfen konum seçiniz!');
+      if (startLocaltion ==  targetLocaltion) throw new Error('Lütfen farklı bir konum seçiniz!');
 
       const tempRouteList: Route[] = GenerateRoutes(startLocaltion, targetLocaltion);
 
@@ -98,7 +99,7 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
           <Combobox
             selectedValue={startLocaltion}
             setSelectedValue={HandleSelectStartLocation}
-            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a ,b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name!, x.properties.id, x.properties.name!))}
+            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a ,b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name?.toUpperCase()!, x.properties.id, x.properties.name!))}
             placeholder="Seçiniz"
             width={props.isSheetComponent ? 360 : undefined}
           />
@@ -108,7 +109,7 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
           <Combobox
             selectedValue={targetLocaltion}
             setSelectedValue={HandleSelectTargetLocation}
-            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a, b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name!, x.properties.id, x.properties.name!))}
+            selectItems={polygonList.filter((f) => f.properties.name != null).sort((a, b) => a.properties.priority - b.properties.priority).map((x) => new selectItem(x.properties.name?.toUpperCase()!, x.properties.id, x.properties.name!))}
             placeholder="Seçiniz"
             width={props.isSheetComponent ? 360 : undefined}
           />

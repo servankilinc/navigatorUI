@@ -243,6 +243,9 @@ export async function ShowLocationPoint(polygon: PolygonGeoJson, map: maplibregl
   const sourceId = `_svg_marker_${uniqName}`;
   const imageId = `${sourceId}_img`;
  
+  if (map.getSource(sourceId)) { 
+    return;
+  }
   const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(polygon.properties.iconSource);
  
   const img = new Image();

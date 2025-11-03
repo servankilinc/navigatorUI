@@ -133,7 +133,7 @@ function App() {
           <div className='absolute bottom-15 2xl:right-[20vw] right-5'>
             <div className='flex items-end gap-3'>
               <FindMyLocation />
-              <Floors />
+              {/* <Floors /> */}
             </div>
           </div>
           <div className='absolute bottom-0 bg-white 2xl:right-[20vw] right-5 p-3 rounded-tl-xl rounded-br-xl z-[99]' >
