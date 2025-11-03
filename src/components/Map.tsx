@@ -20,6 +20,7 @@ export default function Map(): React.JSX.Element {
       style: {
         version: 8,
         name: 'Raster tiles',
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
         sources: {
           'raster-tiles': {
             type: 'raster',

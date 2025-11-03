@@ -34,7 +34,7 @@ function NavigationController(): React.JSX.Element {
             <NavigationForm isSheetComponent={true} />
             <SheetFooter>
               <SheetClose asChild>
-                <Button variant="outline">Close</Button>
+                <Button variant="outline">Kapat</Button>
               </SheetClose>
             </SheetFooter>
           </SheetContent>

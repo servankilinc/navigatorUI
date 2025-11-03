@@ -9,6 +9,8 @@ import Combobox, { selectItem } from '@/components/ui/combobox';
 import { Button } from '@/components/ui/button';
 import { IoNavigateCircle, IoTrash } from 'react-icons/io5';
 import { setStartLocation, setTargetLocation } from '@/redux/reducers/appSlice';
+import { FaMosque } from "react-icons/fa6";
+import { FaRestroom } from "react-icons/fa";
 
 function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
   const dispatch = useAppDispatch();
@@ -67,11 +69,29 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
     }
   }
 
+  function GoToMescit(){
+    const polyMescit =  polygonList.find(f => f.properties.name?.toLowerCase().includes("mesc"));
+    const polyStart =  polygonList.find(f => f.properties.name?.toLowerCase().includes("konum"));
+    if(!polyMescit || !polyStart) return;
+    dispatch(setStartLocation(polyStart.properties.id));
+    dispatch(setTargetLocation(polyMescit.properties.id));
+    
+    setTimeout(() => HandleNavigation(), 2000);
+  }
+  function GoToRestRoom(){
+    const polyWc =  polygonList.find(f => f.properties.name?.toLowerCase().includes("wc"));
+    const polyStart =  polygonList.find(f => f.properties.name?.toLowerCase().includes("konum"));
+    if(!polyWc || !polyStart) return;
+    dispatch(setStartLocation(polyStart.properties.id));
+    dispatch(setTargetLocation(polyWc.properties.id));
+    
+    setTimeout(() => HandleNavigation(), 2000);
+  }
   if (!map) return <></>;
   if (!polygonList) return <></>;
 
   return (
-    <div className="flex flex-col p-3 gap-6">
+    <div className="flex flex-col p-3 pb-0 gap-6" style={{justifyContent: "space-between"}}>
       <div className="flex flex-col gap-6">
         <div className="grid gap-2">
           <p className="text-start text-xs font-light ps-2">Başlangıç Konum</p>
@@ -95,11 +115,20 @@ function NavigationForm(props: {isSheetComponent: boolean}): React.JSX.Element {
         </div>
       </div>
       <div className="flex content-between items-center gap-2">
-        <Button className="bg-blue-600 w-[100px]" onClick={HandleNavigation}>
+        <Button className="bg-blue-600 w-[250px]" onClick={HandleNavigation}>
           <IoNavigateCircle color="white" />
         </Button>
         <Button variant="destructive" onClick={HandleClear}>
           <IoTrash color="white" />
+        </Button>
+      </div>
+
+      <div className="flex content-between items-center gap-2">
+        <Button variant="outline" className='bg-green-600' onClick={GoToMescit}>
+          <FaMosque color="#fff" />
+        </Button>
+        <Button variant="outline" className='bg-yellow-500' onClick={GoToRestRoom}>
+          <FaRestroom color="#fff" />
         </Button>
       </div>
     </div>

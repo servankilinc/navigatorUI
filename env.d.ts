@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_ZOOM: number;
   readonly VITE_CURRENT_LNG: number;
   readonly VITE_CURRENT_LAT: number;
+  readonly VITE_SHOW_TEXT: number;
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv

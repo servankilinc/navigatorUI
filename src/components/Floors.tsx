@@ -4,7 +4,7 @@ import { ShowAdvancedPoint } from '../services/advancedPointService';
 import { ShowPath } from '../services/pathService';
 import { ShowRoute } from '../services/navigationService';
 import Solid from '../models/Solid';
-import { ShowLogo, ShowPolygon, ShowSolid } from '../services/polygonService';
+import { ShowLocationPoint, ShowLogo, ShowPolygon, ShowSolid } from '../services/polygonService';
 import { useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
@@ -50,6 +50,9 @@ function Floors() {
     }
 
     polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLogo(polygon, map));
+
+    // mescit ve wc için eklendi
+    polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLocationPoint(polygon, map));
 
   }, [currentFloor, map]);
 

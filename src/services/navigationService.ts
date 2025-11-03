@@ -17,6 +17,7 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void {
 
   const sourceId = `_c_route_layer`;
  
+  if (map.getSource(sourceId)) map.removeSource(sourceId);
   map.addSource(sourceId, { 
     type: 'geojson', 
     data: { 
@@ -28,38 +29,31 @@ export function ShowRoute(path: Position[], map: maplibregl.Map): void {
       properties: {} 
     } 
   });
-  
-  // rota pointsden önce yoksa _c_SolidOfFloor veya ilk polygondan dan önce yoksa ilk modeden eklensin
-  const beforeLayer = getFirstPointLayer(map) ?? map.getLayer('_c_SolidOfFloor')?.id ?? getFirstPolygonLayer(map) ?? getFirstModelLayer(map);
 
-  // burası konum servisinden gelecek 
-  let isLocationAvailable = store.getState().appReducer.isWatcherEnable;
-  if(isLocationAvailable == false){
-    map.addLayer({
-      id: sourceId,
-      type: 'line',
-      source: sourceId,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-      'line-color':  '#009CDF',
-        'line-width': 8
-      },
-    }, beforeLayer ?? undefined);
-  }
-  else{ 
-    map.addLayer({
-      id: sourceId,
-      type: 'line',
-      source: sourceId,
-      layout: { 'line-cap': 'round', 'line-join': 'round' },
-      paint: {
-        'line-color':  '#cacacaff',
-        'line-width': 8,
-        'line-dasharray': [2, 2],
-      },
-    }, beforeLayer ?? undefined);  
-  }
+  const beforeLayer = getFirstPointLayer(map) ??
+                      map.getLayer('_c_SolidOfFloor')?.id ??
+                      getFirstPolygonLayer(map) ??
+                      getFirstModelLayer(map);
+
+  if (map.getLayer(sourceId)) map.removeLayer(sourceId);
+ 
+  map.addLayer({
+    id: sourceId,
+    type: 'line',
+    source: sourceId,
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#009CDF',
+      'line-width': 7,
+      // 'line-dasharray': [1, 3], // başlangıçta noktalı
+      'line-opacity': 1,
+    },
+  }, beforeLayer ?? undefined); 
 }
+
 
 
 export function ShowNextRoute(route: Route, currentPosition: Position, map: maplibregl.Map): void {
