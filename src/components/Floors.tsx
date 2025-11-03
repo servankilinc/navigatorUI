@@ -31,13 +31,14 @@ function Floors() {
   useEffect(() => {
     if (!map) return;
     if (!currentFloor) return;
+    alert("GELDI 1")
     const floorIndex = currentFloor?.index;
-
+    
     advancedPointList.filter((f) => f.properties.floor == floorIndex).map((advancedPoint) => ShowAdvancedPoint(advancedPoint, map));
     pathList.filter((f) => f.properties.floor == floorIndex).map((path) => ShowPath(path, map!));
     routeList.filter((f) => f.floor == floorIndex).map((route) => ShowRoute(route.path, map));
     threeDModelList.filter((f) => f.properties.floor == floorIndex).map((d) => Show3DModel(d, map));
-
+    
     if (currentLayerType === LayerTypesEnum.UcBoyut) {
       const featuresToShow = solid.features.filter((f) => f.properties.floor == floorIndex);
       const solidToShow: Solid = {
@@ -48,12 +49,13 @@ function Floors() {
     } else {
       polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowPolygon(polygon, map));
     }
-
+    
     polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLogo(polygon, map));
-
+    
     // mescit ve wc için eklendi
     polygonList.filter((f) => f.properties.floor == floorIndex).map((polygon) => ShowLocationPoint(polygon, map));
-
+    
+    alert("GELDI 2")
   }, [currentFloor, map]);
 
   function SwipeFloor(floorIndex: number): void {
@@ -65,34 +67,34 @@ function Floors() {
     dispath(setCurrentFloor(nextFloor));
   }
 
-  function ClearRouteLayers() {
-    if (map == null) return;
-    map.getStyle().layers.forEach((layer) => {
-      if (layer.id.startsWith('route-layer')) {
-        if (map.getLayer(layer.id)) {
-          map.removeLayer(layer.id);
-        }
-        if (map.getSource(layer.id)) {
-          map.removeSource(layer.id);
-        }
-      }
-    });
-  }
+  // function ClearRouteLayers() {
+  //   if (map == null) return;
+  //   map.getStyle().layers.forEach((layer) => {
+  //     if (layer.id.startsWith('route-layer')) {
+  //       if (map.getLayer(layer.id)) {
+  //         map.removeLayer(layer.id);
+  //       }
+  //       if (map.getSource(layer.id)) {
+  //         map.removeSource(layer.id);
+  //       }
+  //     }
+  //   });
+  // }
 
-  function ClearLayers() {
-    if (map == null) return;
+  // function ClearLayers() {
+  //   if (map == null) return;
 
-    map.getStyle().layers.forEach((layer) => {
-      if (layer.id.startsWith('_')) {
-        if (map.getLayer(layer.id)) {
-          map.removeLayer(layer.id);
-        }
-        if (map.getSource(layer.id)) {
-          map.removeSource(layer.id);
-        }
-      }
-    });
-  }
+  //   map.getStyle().layers.forEach((layer) => {
+  //     if (layer.id.startsWith('_')) {
+  //       if (map.getLayer(layer.id)) {
+  //         map.removeLayer(layer.id);
+  //       }
+  //       if (map.getSource(layer.id)) {
+  //         map.removeSource(layer.id);
+  //       }
+  //     }
+  //   });
+  // }
 
   if (!map || !floorList || floorList.length <=1) return <></>;
 

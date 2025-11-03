@@ -1,5 +1,5 @@
 import './App.css';
-import React, { useEffect } from 'react';
+import  { useEffect } from 'react';
 import AlertSuccess from '@/components/alerts/AlertSuccess';
 import AlertError from '@/components/alerts/AlertError';
 import { useAppDispatch, useAppSelector } from './redux/hooks';
@@ -12,17 +12,17 @@ import LineStringGeoJson from './models/Features/LineStringGeoJson';
 import PolygonGeoJson from './models/Features/PolygonGeoJson';
 import { setAdvancedPointList, setEntrancePointList, setFloorList, setGraphList, setPathList, setPolygonList, setSolidFeatures, setThreeDModels } from './redux/reducers/storageSlice';
 import { showAlertError } from './redux/reducers/alertSlice';
-import { setCurrentFloor, setCurrentLocation, setIsWatcherEnable } from './redux/reducers/appSlice';
+import { setCurrentFloor } from './redux/reducers/appSlice';
 import Solid from './models/Solid';
 import GraphBaseModel from './models/GraphBaseModel';
-import { StartWatch, StopWatch } from './services/locationService';
-import { store } from './redux/store';
-import Route from './models/Route';
-import { ShowCurrentPoint, ShowNextRoute } from './services/navigationService';
-import { Position } from 'geojson';
+// import { StartWatch, StopWatch } from './services/locationService';
+// import { store } from './redux/store';
+// import Route from './models/Route';
+// import { ShowCurrentPoint, ShowNextRoute } from './services/navigationService';
+// import { Position } from 'geojson';
 import Floors from './components/Floors';
 import NavigationController from './components/NavigationController';
-import { Button } from './components/ui/button';
+// import { Button } from './components/ui/button';
 import LayerSelection from './components/LayerSelection';
 import Compass from './components/Compass';
 import FindMyLocation from './components/FindMyLocation';
@@ -34,8 +34,8 @@ function App() {
   const dispatch = useAppDispatch();
 
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
-  const map = useAppSelector((state) => state.mapReducer.map);
-  const isWatcherEnable = useAppSelector((state) => state.appReducer.isWatcherEnable);
+  // const map = useAppSelector((state) => state.mapReducer.map);
+  // const isWatcherEnable = useAppSelector((state) => state.appReducer.isWatcherEnable);
 
 
   useEffect(() => { 
@@ -45,26 +45,26 @@ function App() {
     // return () => {
     //   if (watchId) StopWatch(watchId);
     // };
-  }, [map]);
+  }, []);
 
-  function HandlePositionChange(position: GeolocationPosition): void {
-    if (!map || !currentFloor || !position) return;
-    if (isWatcherEnable != true) dispatch(setIsWatcherEnable(true));
+  // function HandlePositionChange(position: GeolocationPosition): void {
+  //   if (!map || !currentFloor || !position) return;
+  //   if (isWatcherEnable != true) dispatch(setIsWatcherEnable(true));
     
-    const currentPosition: Position = [position.coords.longitude, position.coords.latitude];
-    ShowCurrentPoint(currentPosition, map);
-    dispatch(setCurrentLocation(currentPosition));
+  //   const currentPosition: Position = [position.coords.longitude, position.coords.latitude];
+  //   ShowCurrentPoint(currentPosition, map);
+  //   dispatch(setCurrentLocation(currentPosition));
 
-    const routeList: Route[] = store.getState().storageReducer.routeList;
-    const route = routeList.find((f) => f.floor === currentFloor.index);
-    if (!route) return;
+  //   const routeList: Route[] = store.getState().storageReducer.routeList;
+  //   const route = routeList.find((f) => f.floor === currentFloor.index);
+  //   if (!route) return;
 
-    ShowNextRoute(route, currentPosition, map);
-  }
+  //   ShowNextRoute(route, currentPosition, map);
+  // }
 
-  function HandleWatchError(err: string | GeolocationPositionError): void {
-    if (isWatcherEnable != false) dispatch(setIsWatcherEnable(false));
-  }
+  // function HandleWatchError(err: string | GeolocationPositionError): void {
+  //   if (isWatcherEnable != false) dispatch(setIsWatcherEnable(false));
+  // }
 
   async function FetchData() {
     try {
@@ -133,7 +133,7 @@ function App() {
           <div className='absolute bottom-15 2xl:right-[20vw] right-5'>
             <div className='flex items-end gap-3'>
               <FindMyLocation />
-              {/* <Floors /> */}
+              <Floors />
             </div>
           </div>
           <div className='absolute bottom-0 bg-white 2xl:right-[20vw] right-5 p-3 rounded-tl-xl rounded-br-xl z-[99]' >

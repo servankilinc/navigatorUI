@@ -97,6 +97,7 @@ function Show3DModelBase(model: ThreeDModelPointGeoJson, map: maplibregl.Map, ty
     },
 
     render(gl: WebGLRenderingContext, args) {
+      console.log(gl);
       const { camera, scene, renderer } = this as unknown as {
         camera: THREE.Camera;
         scene: THREE.Scene;

@@ -1,7 +1,6 @@
 import { useAppSelector } from '../redux/hooks';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemTitle } from '@/components/ui/item';
 import { useEffect, useState } from 'react';
-import { FaRoute } from "react-icons/fa6";
 import * as turf from "@turf/turf";
 import { TbRouteAltRight } from "react-icons/tb";
 import { FaAngleRight } from "react-icons/fa6";
