@@ -58,6 +58,8 @@ function Floors() {
   }, [currentFloor, map]);
 
   function SwipeFloor(floorIndex: number): void {
+    if(floorIndex == currentFloor?.index) return;
+    
     // ClearLayers();
     // ClearRouteLayers();
 
