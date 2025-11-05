@@ -165,6 +165,8 @@ export function HideCurrentPoint(map: maplibregl.Map): void {
 }
 
 export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
+  await HideStartPoint(map);
+
   const sourceId = `_point_start_`;
   const sourceImageId = `_point_start_img_`;
 
@@ -206,7 +208,7 @@ export async function ShowStartPoint(position: Position, map: maplibregl.Map) {
     beforeLayer ?? undefined
   );
 }
-export function HideStartPoint(map: maplibregl.Map): void {
+export async function HideStartPoint(map: maplibregl.Map): Promise<void> {
   const sourceId = `_point_start_`;
   const sourceImageId = `_point_start_img_`;
 
@@ -221,9 +223,12 @@ export function HideStartPoint(map: maplibregl.Map): void {
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId);
   }
+
+  await new Promise((r) => setTimeout(r, 100));
 }
 
 export async function ShowTargetPoint(position: Position, map: maplibregl.Map) {
+  await HideTargetPoint(map);
   const sourceId = `_point_target_`;
   const sourceImageId = `_point_target_img_`;
 
@@ -265,7 +270,7 @@ export async function ShowTargetPoint(position: Position, map: maplibregl.Map) {
     beforeLayer ?? undefined
   );
 }
-export function HideTargetPoint(map: maplibregl.Map): void {
+export async function HideTargetPoint(map: maplibregl.Map): Promise<void> {
   const sourceId = `_point_target_`;
   const sourceImageId = `_point_target_img_`;
 
@@ -280,6 +285,8 @@ export function HideTargetPoint(map: maplibregl.Map): void {
   if (map.getSource(sourceId)) {
     map.removeSource(sourceId);
   }
+  
+  await new Promise((r) => setTimeout(r, 100));
 }
 
 export function ClearRoutes(map: maplibregl.Map): void {

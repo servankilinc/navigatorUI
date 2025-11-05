@@ -17,7 +17,7 @@ const initialState: StateUI = {
   isEntrancePointAdded: true,
   currentFloor: undefined,
   layerType : LayerTypesEnum.UcBoyut,
-  isWatcherEnable: false,
+  isWatcherEnable: false
 };
 
 export const appSlice = createSlice({
@@ -37,7 +37,7 @@ export const appSlice = createSlice({
       state.targetLocaltion = action.payload;
     },
     setLayerType: (state, action: PayloadAction<LayerTypesEnum>) => {
-      state.layerType = action.payload;
+      if(state.layerType != action.payload) state.layerType = action.payload;
     },
     setIsWatcherEnable: (state, action: PayloadAction<boolean>) => {
       state.isWatcherEnable = action.payload;

@@ -114,7 +114,7 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
     source: sourceId,
     layout: {
       'icon-image': sourceId,
-      'icon-size': 0.04,
+      'icon-size': 0.06,
       'icon-anchor': 'top',
     },
   });
@@ -125,6 +125,12 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
 
   const sourceId = `_label_${polygon.properties.name}`;
   const positionLabel = getPolygonCenter(polygon);
+  if (map.getLayer(sourceId)) {
+    map.removeLayer(sourceId);
+  }
+  if (map.getSource(sourceId)) {
+    map.removeSource(sourceId);
+  }
 
   const pointGeoJson: GeoJSON.Feature<GeoJSON.Point> = {
     type: 'Feature',
@@ -145,8 +151,8 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
       source: sourceId,
       layout: {
         'text-field': ['get', 'name'],
-        'text-size': 8,
-        'text-anchor': 'center',
+        'text-size': 6,
+        'text-anchor': 'top',
         'text-allow-overlap': true,
       },
       paint: {
@@ -158,10 +164,12 @@ export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Pr
 
 // CIRCLE WHITE BACKGROUND
 // export async function ShowLogo(polygon: PolygonGeoJson, map: maplibregl.Map): Promise<void> {
-//   if(import.meta.env.VITE_SHOW_TEXT == true) {
+//   if(import.meta.env.VITE_SHOW_TEXT == 1) {
 //     ShowText(polygon, map);
 //     return;
 //   }
+//   if (polygon.properties.iconSource == undefined || polygon.properties.iconSource.length <= 0) return;
+
 //   if (!polygon.properties?.name) return;
 //    const sourceId = `_logo_${polygon.properties.iconSource}`;
 //   const positionLogo = getPolygonCenter(polygon);

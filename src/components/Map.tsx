@@ -4,6 +4,10 @@ import maplibregl, { Marker } from 'maplibre-gl';
 import { useAppDispatch } from '../redux/hooks';
 import { setBearing, setMap } from '../redux/reducers/mapSlice';
 import throttle from 'lodash/throttle';
+import { setLayerType, setTargetLocation } from '@/redux/reducers/appSlice';
+import { ClearRoutes } from '@/services/navigationService';
+import { setRouteList } from '@/redux/reducers/storageSlice';
+import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
 
 const CENTER_LNG = Number(import.meta.env.VITE_CENTER_LNG);
 const CENTER_LAT = Number(import.meta.env.VITE_CENTER_LAT);
@@ -14,13 +18,15 @@ const MAX_ZOOM = Number(import.meta.env.VITE_MAX_ZOOM);
 export default function Map(): React.JSX.Element {
   const dispatch = useAppDispatch();
 
+  let touchWatcherDefaultSecond = 10; 
+  let touchWatcherSecond = touchWatcherDefaultSecond; 
   useEffect(() => {
     const map = new maplibregl.Map({
       container: 'map',
       style: {
         version: 8,
         name: 'Raster tiles',
-    glyphs: '/fonts/{fontstack}/{range}.pbf',
+        glyphs: '/fonts/{fontstack}/{range}.pbf',
         sources: {
           'raster-tiles': {
             type: 'raster',
@@ -48,7 +54,7 @@ export default function Map(): React.JSX.Element {
       minZoom: MIN_ZOOM,
       maxZoom: MAX_ZOOM,
       pitch: 40,
-      bearing: 100,
+      bearing: 80,
       canvasContextAttributes: { antialias: true },
       maxBounds: [
         [32.559531, 37.942824], // sol-alt köşe
@@ -56,6 +62,9 @@ export default function Map(): React.JSX.Element {
       ],
     });
 
+    map.on("dragstart", () => {
+      touchWatcherSecond = touchWatcherDefaultSecond;
+    })
     map.on('load', () => {
       dispatch(setMap(map));
     });
@@ -63,7 +72,7 @@ export default function Map(): React.JSX.Element {
     // throttle sürekli state set etmek yerine 100ms de bir set eder
     const updateBearing = throttle(() => {
       dispatch(setBearing(map.getBearing()));
-    }, 100);
+    }, 400);
  
     if (import.meta.env.VITE_CURRENT_LNG != undefined ||  import.meta.env.VITE_CURRENT_LAT!= undefined){
       new Marker({ color: "#ff0000" }).setLngLat([import.meta.env.VITE_CURRENT_LNG, import.meta.env.VITE_CURRENT_LAT]).addTo(map);
@@ -71,6 +80,26 @@ export default function Map(): React.JSX.Element {
 
     dispatch(setBearing(map.getBearing()));
     map.on('rotate', updateBearing);
+
+    setInterval(() => {
+      touchWatcherSecond -= 1;
+      if(touchWatcherSecond <= 0){
+        touchWatcherSecond = touchWatcherDefaultSecond;
+        ClearRoutes(map);
+        map!.easeTo({ pitch: 40, bearing: 80, duration: 500, center: [CENTER_LNG, CENTER_LAT], zoom: ZOOM, });
+        dispatch(setTargetLocation(undefined));
+        dispatch(setRouteList([]));
+        dispatch(setLayerType(LayerTypesEnum.UcBoyut))
+      }
+    }, 1000);
+
+    window.addEventListener("click", function(){
+      touchWatcherSecond = touchWatcherDefaultSecond;
+    })
+    
+    window.addEventListener("dragstart", function(){
+      touchWatcherSecond = touchWatcherDefaultSecond;
+    })
 
     return () => {
       map.off('rotate', updateBearing);

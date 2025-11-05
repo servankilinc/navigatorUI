@@ -6,25 +6,24 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
 import { LayerTypesEnum } from '@/models/UIModels/LayerTypesEnum';
 import { LuRotate3D } from "react-icons/lu";
+import { useEffect } from 'react';	
 
 function LayerSelection() {
+  const dispath = useAppDispatch();
+  
   const map = useAppSelector((state) => state.mapReducer.map);
-
   const currentFloor = useAppSelector((state) => state.appReducer.currentFloor);
-
   const polygonList = useAppSelector((state) => state.storageReducer.polygons);
   const solid = useAppSelector((state) => state.storageReducer.solid);
-
   const currentLayerType = useAppSelector((state) => state.appReducer.layerType);
 
-  const dispath = useAppDispatch();
-
-  function ChangeLayerType(nextLayerType: LayerTypesEnum): void {
-    if(nextLayerType === currentLayerType) return;
+  useEffect(() => {
+    if(!currentLayerType) return;
+    if(!map) return;
     ClearPolygons();
     ClearSolids();
     
-    if (nextLayerType === LayerTypesEnum.UcBoyut) {
+    if (currentLayerType === LayerTypesEnum.UcBoyut) {
       const featuresToShow = solid.features.filter((f) => f.properties.floor == currentFloor!.index);
       const solidToShow: Solid = {
         type: 'FeatureCollection',
@@ -45,6 +44,11 @@ function LayerSelection() {
     }
 
     polygonList.filter((f) => f.properties.floor == currentFloor!.index).map((polygon) => ShowLogo(polygon, map!));
+  },[currentLayerType])
+
+  function ChangeLayerType(nextLayerType: LayerTypesEnum): void {
+    if(nextLayerType === currentLayerType) return;
+  
     dispath(setLayerType(nextLayerType))
   }
 

@@ -19,7 +19,7 @@ function CurrentRoute() {
     if (!routeList || routeList.length <= 0) return;
     if (!currentFloor) return;
     const currentFloorRoute = routeList.find(f => f.floor == currentFloor.index);
-    if (!currentFloorRoute) return;
+    if (!currentFloorRoute || currentFloorRoute.path.length <=1) return;
     
     const line = turf.lineString(currentFloorRoute.path);
     const distanceInKm = turf.length(line, { units: "kilometers" });
@@ -28,7 +28,7 @@ function CurrentRoute() {
     setTotalDistance(distanceInMeters);
   }, [routeList, currentFloor])
   
-  if (!totalDistance || totalDistance <= 0 || !startLocaltion || !targetLocaltion) return <></>;
+  if (!totalDistance || totalDistance <= 0 || !startLocaltion || !targetLocaltion || !routeList || routeList.length <= 0) return <></>;
 
   return (
     <Item variant="outline" className="absolute top-0 left-[40%] m-0 border-0 rounded-none rounded-b-2xl shadow-lg bg-white">
@@ -38,18 +38,16 @@ function CurrentRoute() {
       <ItemContent>
         <ItemTitle>Oluşturlan Rota
           <hr/>
-           <div> Mesafe:  {totalDistance.toFixed(0)} m </div>
-        </ItemTitle>
-        <ItemDescription>
-          <div className='flex items-center content-around gap-4'>
-            <span className='bg-white rounded-xl p-2 m-1 shadow'>
-              {polygonList.find(f => f.properties.id == startLocaltion)?.properties.name}
-            </span>
-            <FaAngleRight size={14} />
-            <span className='bg-white rounded-xl p-2 m-1 shadow'>
-              {polygonList.find(f => f.properties.id == targetLocaltion)?.properties.name}
-            </span>
-          </div>
+          <p> Mesafe:  {totalDistance.toFixed(0)} m </p>
+        </ItemTitle >
+        <ItemDescription className='flex items-center content-around gap-4'> 
+	        <span className='bg-white rounded-xl p-2 m-1 shadow'>
+	          {polygonList.find(f => f.properties.id == startLocaltion)?.properties.name}
+	        </span>
+	        <FaAngleRight size={14} />
+	        <span className='bg-white rounded-xl p-2 m-1 shadow'>
+	          {polygonList.find(f => f.properties.id == targetLocaltion)?.properties.name}
+	        </span>     
         </ItemDescription>
       </ItemContent>
     </Item>
